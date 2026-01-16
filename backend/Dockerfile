@@ -20,6 +20,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
+COPY database/concert_tracker.sql ./database/concert_tracker.sql
 
 EXPOSE 4242
 CMD ["node", "dist/index.js"]

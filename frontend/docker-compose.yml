@@ -19,8 +19,7 @@ services:
       - "3306:3306"
 
   backend:
-    build:
-      context: ../backend
+    image: schisskiss/concerttracker_backend
     restart: unless-stopped
     environment:
       DB_HOST: ${DB_HOST}
@@ -35,16 +34,24 @@ services:
       - "4242:4242"
 
   frontend:
-    build:
-      context: .
-      args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_USE_MOCK: ${VITE_USE_MOCK}
+    image: schisskiss/concerttracker_frontend
     restart: unless-stopped
     depends_on:
       - backend
     ports:
       - "8080:80"
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MARIADB_USER}
+      PMA_PASSWORD: ${MARIADB_PASSWORD}
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
 
 volumes:
   db_data:
