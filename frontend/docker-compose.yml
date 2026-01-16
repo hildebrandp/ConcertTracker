@@ -1,0 +1,50 @@
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MARIADB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../ConcertTracker_Backend/resources/database/concert_tracker.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    ports:
+      - "3306:3306"
+
+  backend:
+    build:
+      context: ../ConcertTracker_Backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4242:4242"
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_USE_MOCK: ${VITE_USE_MOCK}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:

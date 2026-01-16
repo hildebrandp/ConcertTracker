@@ -1,0 +1,545 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "Concert-Tracker API",
+      "description": "API for tracking concerts",
+      "version": "0.0.1",
+      "contact": {
+        "name": "hildebrandp",
+        "email": "foo@bar.com"
+      }
+    },
+    "servers": [
+      {
+        "url": "http://localhost:4242/api",
+        "description": "Local development server"
+      }
+    ],
+    "paths": {
+      "/concertVenues": {
+        "get": {
+          "summary": "Get all Concert-Venues",
+          "description": "Fetch all Concert-Venues from the database.",
+          "responses": {
+            "200": {
+              "description": "A list of all Concert-Venues",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ConcertVenue"
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Server error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+    "/concertVenues/{id}": {
+      "get": {
+          "summary": "Get a Concert-Venue by ID",
+          "description": "Fetch a single Concert-Venue by their ID.",
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              },
+              "description": "The ID of the Concert-Venue"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "A single Concert-Venue",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ConcertVenue"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Concert-Venue not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Server error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "ConcertVenue": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "The unique ID of the Concert-Venue"
+            },
+            "name": {
+              "type": "string",
+              "description": "The name of the Concert-Venue"
+            },
+            "address": {
+              "type": "string",
+              "description": "The address of the Concert-Venue"
+            },
+            "city": {
+              "type": "string",
+              "description": "The city where the Concert-Venue is located"
+            },
+            "state": {
+              "type": "string",
+              "description": "The state where the Concert-Venue is located"
+            },
+            "country": {
+              "type": "string",
+              "description": "The country where the Concert-Venue is located"
+            },
+            "postal_code": {
+              "type": "string",
+              "description": "The postal code of the city where the Concert-Venue is located"
+            },
+            "type": {
+              "type": "string",
+              "description": "The type of venue (e.g., 'Arena', 'Theater', 'Club')",
+              "$ref": "#/components/schemas/ConcertVenue_Type"
+            },
+            "indoor_outdoor": {
+              "type": "string",
+              "description": "Indicates if the venue is indoor, outdoor, or mixed",
+              "enum": ["indoor", "outdoor", "mixed"]
+            },
+            "capacity": {
+              "type": "integer",
+              "description": "The seating or standing capacity of the venue "
+            },
+            "website": {
+              "type": "string",
+              "description": "A URL for the venue's official website"
+            },
+            "notes": {
+              "type": "string",
+              "description": "Additional notes about the venue (optional)"
+            },
+            "latitude": {
+              "type": "string",
+              "description": "Latitude coordinates for mapping purposes"
+            },
+            "longitude": {
+              "type": "string",
+              "description": "Longitude coordinates for mapping purposes"
+            },
+            "rating": {
+              "type": "integer",
+              "description": "A URL for the venue's official website"
+            }
+          },
+          "required": ["id", "name"]
+        },
+        "ConcertVenue_Type": {
+          "type": "string",
+          "oneOf": [
+            {
+              "const": "Arena",
+              "description": "Large indoor venues often used for sports and major concerts."
+            },
+            {
+              "const": "Theater",
+              "description": "Medium-sized venues with tiered seating, ideal for acoustic or classical concerts."
+            },
+            {
+              "const": "Club",
+              "description": "Smaller, intimate venues for up-close performances."
+            },
+            {
+              "const": "Concert Hall",
+              "description": "Designed for symphonic and acoustic music."
+            },
+            {
+              "const": "Auditorium",
+              "description": "Multi-purpose halls often used in schools or universities."
+            },
+            {
+              "const": "Studio",
+              "description": "Small, private venues, often for live recordings or exclusive performances."
+            },
+            {
+              "const": "Stadium",
+              "description": "Large outdoor venues for massive crowds."
+            },
+            {
+              "const": "Amphitheater",
+              "description": "Outdoor venues with tiered seating, often built into hillsides."
+            },
+            {
+              "const": "Park",
+              "description": "Open green spaces adapted for music festivals and outdoor concerts."
+            },
+            {
+              "const": "Plaza",
+              "description": "Urban open spaces in cities, used for public performances."
+            },
+            {
+              "const": "Beach",
+              "description": "Coastal venues offering unique vibes for summer or tropical concerts."
+            },
+            {
+              "const": "Festival Grounds",
+              "description": "Large open spaces specifically designed for multi-stage music festivals."
+            },
+            {
+              "const": "Fairgrounds",
+              "description": "Adapted spaces for concerts during fairs or seasonal events."
+            },
+            {
+              "const": "Camping Site",
+              "description": "Festival areas where attendees can camp, often part of multi-day events."
+            },
+            {
+              "const": "Church or Cathedral",
+              "description": "Unique venues for choir or acoustic performances in religious settings."
+            },
+            {
+              "const": "Cultural Center",
+              "description": "Community or cultural hubs for smaller performances."
+            },
+            {
+              "const": "Rooftop",
+              "description": "Urban rooftops offering scenic views for exclusive events."
+            },
+            {
+              "const": "Barn",
+              "description": "Rustic, countryside settings for folk or indie performances."
+            },
+            {
+              "const": "Cruise Ship",
+              "description": "Unique venues aboard ships for concerts at sea."
+            },
+            {
+              "const": "Museum or Gallery",
+              "description": "Spaces that combine art exhibitions with music events."
+            },
+            {
+              "const": "Warehouse",
+              "description": "Converted industrial spaces for underground or electronic music."
+            },
+            {
+              "const": "Castle or Fortress",
+              "description": "Historic landmarks offering grand, atmospheric concerts."
+            },
+            {
+              "const": "Desert",
+              "description": "Open landscapes, often used for large-scale electronic festivals."
+            },
+            {
+              "const": "Underground Cave",
+              "description": "Natural acoustic spaces for niche performances."
+            },
+            {
+              "const": "Airfield",
+              "description": "Large, flat areas often used for electronic or rock festivals."
+            }
+          ],
+          "required": ["venue_type"],
+          "additionalProperties": false
+        },
+        "Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "A message describing the error"
+            }
+          },
+          "required": ["message"]
+        }
+      },
+      "delete": {
+        "summary": "Delete a Concert-Venue by ID",
+        "description": "Delete a single Concert-Venue by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Venue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response that the entry was deleted successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Venue entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Venue has linked events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/concertBands/{id}": {
+      "delete": {
+        "summary": "Delete a Concert-Band by ID",
+        "description": "Delete a single Concert-Band by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Band"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response that the entry was deleted successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Band entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    ,
+    "/concertEvents/{id}": {
+      "delete": {
+        "summary": "Delete a Concert-Event by ID",
+        "description": "Delete a single Concert-Event by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Event"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response that the entry was deleted successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Event entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/concertEvents/{id}/withBands": {
+      "put": {
+        "summary": "Update a Concert-Event with bands",
+        "description": "Updates a Concert-Event, optional venue, and event bands in a single transaction.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Event"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConcertEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Concert-Event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/admin/clearAll": {
+      "delete": {
+        "summary": "Delete all data",
+        "description": "Deletes all data from Concert-related tables.",
+        "responses": {
+          "200": {
+            "description": "Response that all data was deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
