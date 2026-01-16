@@ -1,0 +1,179 @@
+{
+  "type": "object",
+  "description": "A Concert-Venue object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The unique ID of the Concert-Venue"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the Concert-Venue"
+    },
+    "address": {
+      "type": "string",
+      "description": "The address of the Concert-Venue (optional)"
+    },
+    "city": {
+      "type": "string",
+      "description": "The city where the Concert-Venue is located (optional)"
+    },
+    "state": {
+      "type": "string",
+      "description": "The state where the Concert-Venue is located (optional)"
+    },
+    "country": {
+      "type": "string",
+      "description": "The country where the Concert-Venue is located (optional)"
+    },
+    "postal_code": {
+      "type": "integer",
+      "description": "The postal code of the city where the Concert-Venue is located (optional)"
+    },
+    "type": {
+      "type": "string",
+      "$ref": "#/components/schemas/ConcertVenue_Type"
+    },
+    "indoor_outdoor": {
+      "type": "string",
+      "description": "Indicates if the venue is indoor, outdoor, or mixed (optional)",
+      "enum": ["indoor", "outdoor", "mixed"]
+    },
+    "capacity": {
+      "type": "integer",
+      "description": "The seating or standing capacity of the venue (optional)"
+    },
+    "website": {
+      "type": "string",
+      "description": "A URL for the venue's official website (optional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the venue (optional)"
+    },
+    "latitude": {
+      "type": "string",
+      "description": "Latitude coordinates for mapping purposes (optional)"
+    },
+    "longitude": {
+      "type": "string",
+      "description": "Longitude coordinates for mapping purposes (optional)"
+    },
+    "rating": {
+      "type": "integer",
+      "description": "Rating of the venue from 0 to 10 (optional)"
+    }
+  },
+  "required": ["name"],
+  "components": {
+    "schemas": {
+      "ConcertVenue_Type": {
+        "type": "string",
+        "description": "The type of venue (e.g., 'Arena', 'Theater', 'Club') (optional)",
+        "oneOf": [
+          {
+            "const": "Arena",
+            "description": "Large indoor venues often used for sports and major concerts."
+          },
+          {
+            "const": "Theater",
+            "description": "Medium-sized venues with tiered seating, ideal for acoustic or classical concerts."
+          },
+          {
+            "const": "Club",
+            "description": "Smaller, intimate venues for up-close performances."
+          },
+          {
+            "const": "Concert Hall",
+            "description": "Designed for symphonic and acoustic music."
+          },
+          {
+            "const": "Auditorium",
+            "description": "Multi-purpose halls often used in schools or universities."
+          },
+          {
+            "const": "Studio",
+            "description": "Small, private venues, often for live recordings or exclusive performances."
+          },
+          {
+            "const": "Stadium",
+            "description": "Large outdoor venues for massive crowds."
+          },
+          {
+            "const": "Amphitheater",
+            "description": "Outdoor venues with tiered seating, often built into hillsides."
+          },
+          {
+            "const": "Park",
+            "description": "Open green spaces adapted for music festivals and outdoor concerts."
+          },
+          {
+            "const": "Plaza",
+            "description": "Urban open spaces in cities, used for public performances."
+          },
+          {
+            "const": "Beach",
+            "description": "Coastal venues offering unique vibes for summer or tropical concerts."
+          },
+          {
+            "const": "Festival Grounds",
+            "description": "Large open spaces specifically designed for multi-stage music festivals."
+          },
+          {
+            "const": "Fairgrounds",
+            "description": "Adapted spaces for concerts during fairs or seasonal events."
+          },
+          {
+            "const": "Camping Site",
+            "description": "Festival areas where attendees can camp, often part of multi-day events."
+          },
+          {
+            "const": "Church or Cathedral",
+            "description": "Unique venues for choir or acoustic performances in religious settings."
+          },
+          {
+            "const": "Cultural Center",
+            "description": "Community or cultural hubs for smaller performances."
+          },
+          {
+            "const": "Rooftop",
+            "description": "Urban rooftops offering scenic views for exclusive events."
+          },
+          {
+            "const": "Barn",
+            "description": "Rustic, countryside settings for folk or indie performances."
+          },
+          {
+            "const": "Cruise Ship",
+            "description": "Unique venues aboard ships for concerts at sea."
+          },
+          {
+            "const": "Museum or Gallery",
+            "description": "Spaces that combine art exhibitions with music events."
+          },
+          {
+            "const": "Warehouse",
+            "description": "Converted industrial spaces for underground or electronic music."
+          },
+          {
+            "const": "Castle or Fortress",
+            "description": "Historic landmarks offering grand, atmospheric concerts."
+          },
+          {
+            "const": "Desert",
+            "description": "Open landscapes, often used for large-scale electronic festivals."
+          },
+          {
+            "const": "Underground Cave",
+            "description": "Natural acoustic spaces for niche performances."
+          },
+          {
+            "const": "Airfield",
+            "description": "Large, flat areas often used for electronic or rock festivals."
+          }
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

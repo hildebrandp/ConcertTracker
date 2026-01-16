@@ -2,7 +2,7 @@
   "name": "concerttracker_backend",
   "version": "1.0.0",
   "description": "Track visited concerts",
-  "main": "dist/indes.js",
+  "main": "dist/index.js",
   "scripts": {
     "tsc": "tsc",
     "test": "jest --verbose",
@@ -13,32 +13,31 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hildebrandp/ConcertTracker_Backend.git"
+    "url": "git+https://github.com/hildebrandp/ConcertTracker"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hildebrandp/ConcertTracker_Backend/issues"
+    "url": "https://github.com/hildebrandp/ConcertTracker/issues"
   },
-  "homepage": "https://github.com/hildebrandp/ConcertTracker_Backend#readme",
+  "homepage": "https://github.com/hildebrandp/ConcertTracker/#readme",
   "devDependencies": {
-    "@redocly/cli": "^1.26.0",
-    "@types/ajv": "^0.0.5",
-    "@types/node": "^22.10.2",
-    "@types/swagger-ui-express": "^4.1.7",
-    "json-schema-to-typescript": "^15.0.3",
-    "nodemon": "^3.1.9",
-    "openapi-typescript": "^7.4.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "@redocly/cli": "^2.14.5",
+    "@types/node": "^25.0.9",
+    "@types/swagger-ui-express": "^4.1.8",
+    "json-schema-to-typescript": "^15.0.4",
+    "nodemon": "^3.1.11",
+    "openapi-typescript": "^7.10.1",
+    "ts-node": "^1.7.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.6",
     "ajv": "^8.17.1",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "mariadb": "^3.4.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mariadb": "^3.4.5",
     "swagger-ui-express": "^5.0.1",
-    "yaml": "^2.6.1"
+    "yaml": "^2.8.2"
   }
 }

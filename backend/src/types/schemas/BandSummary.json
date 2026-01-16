@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "description": "Summary data for a band",
+  "properties": {
+    "band_id": {
+      "type": "integer",
+      "description": "The band ID"
+    },
+    "band_name": {
+      "type": "string",
+      "description": "The band name"
+    },
+    "last_seen_date": {
+      "type": "string",
+      "description": "Last time the band was seen"
+    },
+    "seen_count": {
+      "type": "integer",
+      "description": "How many times the band was seen"
+    },
+    "rating": {
+      "type": "integer",
+      "description": "Band rating (optional)"
+    },
+    "last_event_name": {
+      "type": "string",
+      "description": "Event name for the last time seen (optional)"
+    },
+    "last_venue_name": {
+      "type": "string",
+      "description": "Venue name for the last time seen (optional)"
+    }
+  },
+  "required": ["band_id", "band_name", "last_seen_date", "seen_count"]
+}

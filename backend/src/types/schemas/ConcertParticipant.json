@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "description": "A Concert-Participant object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The unique ID of the Concert-Venue"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the Concert-Venue"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the venue (optional)"
+    }
+  },
+  "required": ["name"]
+}

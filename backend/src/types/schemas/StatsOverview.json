@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "description": "A Stats-Overview object",
+    "properties": {
+      "concertsAttended": {
+        "type": "integer",
+        "description": "Number of all attended concerts"
+      },
+      "bandsSeen": {
+        "type": "integer",
+        "description": "Number of all seen bands"
+      }
+    },
+    "required": ["concertsAttended", "bandsSeen"]
+  }
+  

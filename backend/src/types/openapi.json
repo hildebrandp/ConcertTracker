@@ -1,0 +1,1575 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Concert-Tracker API",
+    "description": "API for tracking concerts",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/concertBands": {
+      "get": {
+        "summary": "Get all Concert-Bands",
+        "description": "Fetch all Concert-Bands from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of all Concert-Bands",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/ConcertBand.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Concert-Band",
+        "description": "Creates a new Concert-Band in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertBand.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dbEntryCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertBands/{id}": {
+      "get": {
+        "summary": "Get a Concert-Band by ID",
+        "description": "Fetch a single Concert-Band by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Band"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Concert-Band",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/ConcertBand.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Concert-Band not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Concert-Band by ID",
+        "description": "Update a single Concert-Band by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Band"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertBand.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Band entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertEvents": {
+      "get": {
+        "summary": "Get all Concert-Events",
+        "description": "Fetch all Concert-Events from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of all Concert-Events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/ConcertEvent.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Concert-Event",
+        "description": "Creates a new Concert-Event in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertEvent.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dbEntryCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertEvents/withBands": {
+      "post": {
+        "summary": "Create a Concert-Event with bands",
+        "description": "Creates a Concert-Event, optional new venue, and event bands in a single transaction.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertEventBundle.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/ConcertEventBundleResponse.json"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+      ,
+      "delete": {
+        "summary": "Delete a Concert-Band by ID",
+        "description": "Delete a single Concert-Band by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Band"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response that the entry was deleted successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Band entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertEvents/{id}/withBands": {
+      "put": {
+        "summary": "Update a Concert-Event with bands",
+        "description": "Updates a Concert-Event, optional venue, and event bands in a single transaction.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Event"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertEventBundle.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/ConcertEventBundleResponse.json"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Concert-Event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertEvents/{id}": {
+      "get": {
+        "summary": "Get a Concert-Event by ID",
+        "description": "Fetch a single Concert-Event by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Event"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Concert-Event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/ConcertEvent.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Concert-Event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Concert-Event by ID",
+        "description": "Update a single Concert-Event by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Event"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertEvent.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Event entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertParticipants": {
+      "get": {
+        "summary": "Get all Concert-Participants",
+        "description": "Fetch all Concert-Participants from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of all Concert-Participants",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/ConcertParticipant.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Concert-Participant",
+        "description": "Creates a new Concert-Participant in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertParticipant.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dbEntryCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertParticipants/{id}": {
+      "get": {
+        "summary": "Get a Concert-Participant by ID",
+        "description": "Fetch a single Concert-Participant by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Participant"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Concert-Participant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/ConcertParticipant.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Concert-Participant not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Concert-Participant by ID",
+        "description": "Update a single Concert-Participant by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Participant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertParticipant.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Participant entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertVenues": {
+      "get": {
+        "summary": "Get all Concert-Venues",
+        "description": "Fetch all Concert-Venues from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of all Concert-Venues",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/ConcertVenue.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Concert-Venue",
+        "description": "Creates a new Concert-Venue in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertVenue.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dbEntryCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concertVenues/{id}": {
+      "get": {
+        "summary": "Get a Concert-Venue by ID",
+        "description": "Fetch a single Concert-Venue by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Venue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Concert-Venue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/ConcertVenue.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Venue entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Concert-Venue by ID",
+        "description": "Update a single Concert-Venue by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Venue"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/ConcertVenue.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Concert-Venue not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eventBands": {
+      "get": {
+        "summary": "Get all Event-Bands",
+        "description": "Fetch all Event-Bands from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of all Event-Band",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/EventBand.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Event-Band",
+        "description": "Creates a new Event-Band in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/EventBand.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dbEntryCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eventBands/{id}": {
+      "get": {
+        "summary": "Get a Event-Band by ID",
+        "description": "Fetch a single Event-Band by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Event-Band"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Event-Band",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/EventBand.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event-Band not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Event-Band by ID",
+        "description": "Update a single Event-Band by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Event-Band"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/EventBand.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Event-Band entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eventParticipants": {
+      "get": {
+        "summary": "Get all Event-Participants",
+        "description": "Fetch all Event-Participants from the database.",
+        "responses": {
+          "200": {
+            "description": "A list of all Event-Participant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/EventParticipant.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Event-Participant",
+        "description": "Creates a new Event-Participant in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/EventParticipant.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response that the entry was created successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/dbEntryCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eventParticipants/{id}": {
+      "get": {
+        "summary": "Get a Event-Participant by ID",
+        "description": "Fetch a single Event-Participant by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Event-Participant"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single Event-Participant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/EventParticipant.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event-Participant not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Event-Participant by ID",
+        "description": "Update a single Event-Participant by their ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Event-Participant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/EventParticipant.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that the entry was updated successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Event-Participant entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+,
+    "/bandSummaries": {
+      "get": {
+        "summary": "Get band summaries",
+        "description": "Fetch summary data for unique bands.",
+        "responses": {
+          "200": {
+            "description": "A list of band summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/BandSummary.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+      ,
+      "delete": {
+        "summary": "Delete a Concert-Venue by ID",
+        "description": "Delete a single Concert-Venue by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Venue"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response that the entry was deleted successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Venue entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Venue has linked events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+      ,
+      "delete": {
+        "summary": "Delete a Concert-Event by ID",
+        "description": "Delete a single Concert-Event by its ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the Concert-Event"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response that the entry was deleted successfull",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Response that the Concert-Event entry could not be found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/eventBandSummaries": {
+      "get": {
+        "summary": "Get event-band summaries",
+        "description": "Fetch summary data for all band appearances.",
+        "responses": {
+          "200": {
+            "description": "A list of event-band summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./schemas/EventBandSummary.json"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/clearAll": {
+      "delete": {
+        "summary": "Delete all data",
+        "description": "Deletes all data from Concert-related tables.",
+        "responses": {
+          "200": {
+            "description": "Response that all data was deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+  "components": {
+    "schemas": {
+      "dbEntryCreated": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A message"
+          },
+          "venueId": {
+            "type": "string",
+            "description": "The ID of the newly created Concert-Venue"
+          }
+        },
+        "required": ["message", "venueId"]
+      },
+      "Ok": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A message"
+          }
+        },
+        "required": ["message"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A message describing the error"
+          }
+        },
+        "required": ["message"]
+      }
+    }
+  }
+}
+
+

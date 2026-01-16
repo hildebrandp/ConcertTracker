@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "description": "A Concert-Band object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The unique ID of the Concert-Band"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the Concert-Band"
+    },
+    "genre": {
+      "type": "string",
+      "description": "The music genre of the band (e.g., 'Rock', 'Metal', 'Punk') (optional)"
+    },
+    "origin_country": {
+      "type": "string",
+      "description": "The country the band is from (optional)"
+    },
+    "rating": {
+      "type": "integer",
+      "description": "A rating for the band (e.g., a scale from 1 to 10) (optional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the Event (optional)"
+    },
+    "link": {
+      "type": "string",
+      "description": "A link to the Band on Plex (optional)"
+    },
+    "website": {
+      "type": "string",
+      "description": "Link to the bands website (optional)"
+    }
+  },
+  "required": ["name"]
+}

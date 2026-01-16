@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "description": "A Concert-Event object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The unique ID of the Concert-Event"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the Concert-Event"
+    },
+    "datetime": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]) ([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$",
+      "description": "A SQL DATETIME in the format YYYY-MM-DD HH:MM:SS"
+    },
+    "venue_id": {
+      "type": "integer",
+      "description": "The ID of the Concert-Venue from 'ConcertVenues' table"
+    },
+    "rating": {
+      "type": "integer",
+      "description": "Rating of the Event from 0 to 10 (optional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the Event (optional)"
+    }
+  },
+  "required": ["name", "datetime", "venue_id"]
+}

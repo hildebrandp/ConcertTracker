@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "description": "A Event-Band object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The unique ID of the Event-Band"
+    },
+    "event_id": {
+      "type": "integer",
+      "description": "The ID of the Concert-Event from 'ConcertEvents' table"
+    },
+    "band_id": {
+      "type": "integer",
+      "description": "The ID of the Concert-Band from 'ConcertBands' table"
+    },
+    "setlist": {
+      "type": "object",
+      "description": "A JSON column storing arbitrary key-value pairs (optional)",
+      "additionalProperties": true
+    },
+    "rating": {
+      "type": "integer",
+      "description": "A rating for the band's performance (e.g., a scale from 1 to 10) (optional)"
+    },
+    "mainAct": {
+      "type": "boolean",
+      "description": "If the band is the main act true, false otherwise"
+    },
+    "runningOrder": {
+      "type": "integer",
+      "description": "The order when the band played"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the Event (optional)"
+    }
+  },
+  "required": ["event_id", "band_id"]
+}

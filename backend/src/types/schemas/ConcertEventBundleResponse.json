@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "description": "Response for the create concert event bundle endpoint",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "A message"
+    },
+    "eventId": {
+      "type": "integer",
+      "description": "The ID of the created Concert-Event"
+    },
+    "venueId": {
+      "type": "integer",
+      "description": "The ID of the Concert-Venue used"
+    },
+    "bandIds": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "eventBandIds": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  },
+  "required": ["message", "eventId", "venueId", "bandIds", "eventBandIds"]
+}

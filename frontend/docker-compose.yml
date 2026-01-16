@@ -14,13 +14,13 @@ services:
       retries: 10
     volumes:
       - db_data:/var/lib/mysql
-      - ../ConcertTracker_Backend/resources/database/concert_tracker.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ../backend/database/concert_tracker.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
     ports:
       - "3306:3306"
 
   backend:
     build:
-      context: ../ConcertTracker_Backend
+      context: ../backend
     restart: unless-stopped
     environment:
       DB_HOST: ${DB_HOST}
