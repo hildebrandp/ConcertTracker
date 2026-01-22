@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Concert Tracker">
+  <circle cx="32" cy="32" r="30" fill="#0b4da2" />
+  <circle cx="32" cy="32" r="28" fill="#0b4da2" stroke="#0b0b0b" stroke-opacity="0.15" stroke-width="2" />
+  <rect x="28" y="16" width="5" height="26" fill="#ffffff" rx="2" />
+  <rect x="42" y="12" width="5" height="26" fill="#ffffff" rx="2" />
+  <rect x="28" y="16" width="19" height="5" fill="#ffffff" rx="2" />
+  <circle cx="24" cy="44" r="7" fill="#ffffff" />
+  <circle cx="44" cy="40" r="7" fill="#ffffff" />
+</svg>

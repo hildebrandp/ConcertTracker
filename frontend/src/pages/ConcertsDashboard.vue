@@ -3,6 +3,7 @@
     <header class="header">
       <div>
         <button type="button" class="title-link" @click="closeAllViews">
+          <img class="title-icon" src="/concert-tracker-icon.svg" alt="" />
           <h1>Concert-Tracker</h1>
         </button>
         <div class="sub">Overview and recent activity</div>
@@ -1326,11 +1327,19 @@ async function handleEventUpdated() {
 }
 
 .title-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   background: none;
   padding: 0;
   color: inherit;
   cursor: pointer;
+}
+
+.title-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .title-link h1 {
