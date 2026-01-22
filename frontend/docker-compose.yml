@@ -19,7 +19,7 @@ services:
       - "3306:3306"
 
   backend:
-    image: schisskiss/concerttracker_backend
+    image: schisskiss/concerttracker_backend:latest
     restart: unless-stopped
     environment:
       DB_HOST: ${DB_HOST}
@@ -34,7 +34,7 @@ services:
       - "4242:4242"
 
   frontend:
-    image: schisskiss/concerttracker_frontend
+    image: schisskiss/concerttracker_frontend@latest
     restart: unless-stopped
     depends_on:
       - backend
