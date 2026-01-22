@@ -2,7 +2,9 @@
   <div class="page">
     <header class="header">
       <div>
-        <h1>Concert-Tracker</h1>
+        <button type="button" class="title-link" @click="closeAllViews">
+          <h1>Concert-Tracker</h1>
+        </button>
         <div class="sub">Overview and recent activity</div>
       </div>
       <div class="header-actions">
@@ -585,6 +587,13 @@ async function openAllActs() {
 
 function closeAllActs() {
   allActsOpen.value = false;
+}
+
+function closeAllViews() {
+  allConcertsOpen.value = false;
+  allBandsOpen.value = false;
+  allActsOpen.value = false;
+  allVenuesOpen.value = false;
 }
 
 async function openAllVenues() {
@@ -1314,6 +1323,18 @@ async function handleEventUpdated() {
 .header h1 {
   margin: 0;
   font-size: 22px;
+}
+
+.title-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.title-link h1 {
+  margin: 0;
 }
 
 .sub {
