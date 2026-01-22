@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div v-if="open" class="backdrop" @click.self="$emit('close')">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
@@ -1420,4 +1420,31 @@ async function save() {
     width: 100%;
   }
 }
+
+@media (max-width: 720px) {
+  .band-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .band-header .field {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .band-flag {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .band-actions {
+    width: 100%;
+  }
+
+  .band-actions button {
+    width: 100%;
+  }
+}
 </style>
+
+

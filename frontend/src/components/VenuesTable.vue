@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="table-card">
     <div class="table-header">
       <h2>{{ title }}</h2>
@@ -51,10 +51,10 @@
           tabindex="0"
           @click="$emit('select', venue.venue_id)"
         >
-          <td class="name">{{ venue.venue_name }}</td>
-          <td>{{ formatDate(venue.last_visited_date) }}</td>
-          <td>{{ venue.visit_count }}</td>
-          <td>
+          <td data-label="Venue" class="name">{{ venue.venue_name }}</td>
+          <td data-label="Last visited">{{ formatDate(venue.last_visited_date) }}</td>
+          <td data-label="Count">{{ venue.visit_count }}</td>
+          <td data-label="Rating">
             <span class="rating">{{ venue.rating ?? "-" }}</span>
           </td>
         </tr>
@@ -192,4 +192,58 @@ function formatDate(iso?: string | null) {
   padding: 20px 16px;
   color: rgba(0, 0, 0, 0.55);
 }
+
+@media (max-width: 720px) {
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .table {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: block;
+  }
+
+  .table tr {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .table tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border: 0;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .table td.empty {
+    display: block;
+    text-align: center;
+  }
+}
 </style>
+
+
+
+
+

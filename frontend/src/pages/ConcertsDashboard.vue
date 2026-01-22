@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page">
     <header class="header">
       <div>
@@ -1448,4 +1448,53 @@ async function handleEventUpdated() {
   background: rgba(180, 0, 0, 0.06);
   padding: 10px 12px;
   border-radius: 10px;
-}</style>
+}
+@media (max-width: 720px) {
+  .page {
+    padding: 14px;
+  }
+
+  .header {
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions > * {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .all-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-row {
+    width: 100%;
+  }
+
+  .filter-row input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .pager {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pager-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pager select {
+    width: 100%;
+  }
+}
+</style>
+
+

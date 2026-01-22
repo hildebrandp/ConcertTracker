@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="stats-row">
     <button type="button" class="stat-card clickable" @click="$emit('show-all-concerts')">
       <div class="stat-label">Concerts attended</div>
@@ -76,5 +76,19 @@ defineEmits<{
   font-weight: 700;
   letter-spacing: 0.2px;
 }
+
+@media (max-width: 980px) {
+  .stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
+
+
 

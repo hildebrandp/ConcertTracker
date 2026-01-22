@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="table-card">
     <div class="table-header">
       <h2>{{ title }}</h2>
@@ -59,11 +59,11 @@
           tabindex="0"
           @click="$emit('select', entry.event_id)"
         >
-          <td>{{ formatDate(entry.date) }}</td>
-          <td class="name">{{ entry.band_name }}</td>
-          <td>{{ entry.event_name ?? "-" }}</td>
-          <td>{{ entry.venue_name ?? "-" }}</td>
-          <td>
+          <td data-label="Date">{{ formatDate(entry.date) }}</td>
+          <td data-label="Band" class="name">{{ entry.band_name }}</td>
+          <td data-label="Event">{{ entry.event_name ?? "-" }}</td>
+          <td data-label="Venue">{{ entry.venue_name ?? "-" }}</td>
+          <td data-label="Rating">
             <span class="rating">{{ entry.rating ?? "-" }}</span>
           </td>
         </tr>
@@ -200,4 +200,58 @@ function formatDate(iso: string) {
   padding: 20px 16px;
   color: rgba(0, 0, 0, 0.55);
 }
+
+@media (max-width: 720px) {
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .table {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: block;
+  }
+
+  .table tr {
+    display: block;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .table tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border: 0;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .table td.empty {
+    display: block;
+    text-align: center;
+  }
+}
 </style>
+
+
+
+
+

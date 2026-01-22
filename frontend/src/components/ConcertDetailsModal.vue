@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div v-if="open" class="backdrop" @click.self="$emit('close')">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
@@ -66,7 +66,7 @@
 
         <div class="section">
           <div class="section-title">Participated with</div>
-          <ul v-if="details" class="list">
+          <ul v-if="details" class="list participants">
             <li v-for="p in details.participatedWith" :key="p.id">{{ p.displayName }}</li>
             <li v-if="details.participatedWith.length === 0" class="muted">No participants recorded.</li>
           </ul>
@@ -241,7 +241,13 @@ function starFillValue(starIndex: number, rating: number) {
 
 .list {
   margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.participants {
   padding-left: 16px;
+  list-style: disc;
 }
 
 .band-item {
@@ -255,7 +261,7 @@ function starFillValue(starIndex: number, rating: number) {
 }
 
 .band-item::before {
-  content: "•";
+  content: "\2022";
   position: absolute;
   left: 0;
   color: currentColor;
@@ -307,4 +313,31 @@ function starFillValue(starIndex: number, rating: number) {
   padding: 8px 12px;
   cursor: pointer;
 }
+
+@media (max-width: 720px) {
+  .modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .close {
+    align-self: flex-end;
+  }
+
+  .modal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .secondary,
+  .danger {
+    width: 100%;
+  }
+}
 </style>
+
+
+
