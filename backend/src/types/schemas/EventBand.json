@@ -20,7 +20,7 @@
       "additionalProperties": true
     },
     "rating": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "description": "A rating for the band's performance (e.g., a scale from 1 to 10) (optional)"
     },
     "mainAct": {

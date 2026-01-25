@@ -531,6 +531,16 @@ export const update_ConcertEvent_WithBands = async (req: Request, res: Response)
         ];
         await connection.query(eventUpdateQuery, eventUpdateValues);
 
+        const existingEventBands = await connection.query(
+            `SELECT band_id, runningOrder, setlist FROM ${table_name_EventBands} WHERE event_id = ?`,
+            [id]
+        );
+        const existingSetlistByBand = new Map<string, any>();
+        for (const entry of existingEventBands) {
+            const key = `${entry.band_id}:${entry.runningOrder ?? ""}`;
+            existingSetlistByBand.set(key, entry.setlist ?? null);
+        }
+
         await connection.query(`DELETE FROM ${table_name_EventBands} WHERE event_id = ?`, [id]);
 
         const bandIds: number[] = [];
@@ -573,10 +583,12 @@ export const update_ConcertEvent_WithBands = async (req: Request, res: Response)
             const runningOrder = entry.runningOrder ?? entry.running_order ?? index + 1;
             const mainAct = entry.mainAct ?? entry.main_act ?? false;
 
+            const setlistKey = `${bandId}:${runningOrder ?? ""}`;
+            const preservedSetlist = existingSetlistByBand.get(setlistKey) ?? null;
             const eventBandValues = [
                 id,
                 bandId,
-                entry.setlist ?? null,
+                entry.setlist ?? preservedSetlist,
                 entry.rating ?? null,
                 mainAct,
                 runningOrder,

@@ -124,7 +124,7 @@
       <div class="setlist-header">
         <div>
           <div class="setlist-title">
-            Setlis: {{ setlistBand?.name ?? "Band" }}
+            Setlist: {{ setlistBand?.name ?? "Band" }}
           </div>
           <div class="setlist-sub">
             {{ setlistDate }}
@@ -306,14 +306,24 @@ async function saveSetlist() {
   setlistSaving.value = true;
   setlistError.value = null;
   try {
-    await updateEventBand(setlistBand.value.eventBandId, {
+    const payload: {
+      event_id: number;
+      band_id: number;
+      setlist?: string | null;
+      rating?: number;
+      mainAct?: boolean;
+      runningOrder?: number | null;
+    } = {
       event_id: details.value.id,
       band_id: setlistBand.value.id,
       setlist: normalized,
-      rating: setlistBand.value.rating ?? null,
       mainAct: Boolean(setlistBand.value.mainAct),
       runningOrder: setlistBand.value.runningOrder ?? null,
-    });
+    };
+    if (setlistBand.value.rating !== null && setlistBand.value.rating !== undefined) {
+      payload.rating = setlistBand.value.rating;
+    }
+    await updateEventBand(setlistBand.value.eventBandId, payload);
     setlistBand.value.setlist = normalized;
     setlistEditOpen.value = false;
     emit("refresh-details");
