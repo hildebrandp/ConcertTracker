@@ -48,12 +48,23 @@
 
       <div class="filter-row">
         <label class="filter-label" for="concerts-search">Search</label>
-        <input
-          id="concerts-search"
-          v-model.trim="concertsSearch"
-          type="text"
-          placeholder="Filter by concert name..."
-        />
+        <div class="filter-input">
+          <input
+            id="concerts-search"
+            v-model.trim="concertsSearch"
+            type="text"
+            placeholder="Filter by concert name..."
+          />
+          <button
+            v-if="concertsSearch"
+            class="clear-button"
+            type="button"
+            @click="concertsSearch = ''"
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
+        </div>
       </div>
 
       <div class="pager">
@@ -109,12 +120,23 @@
 
       <div class="filter-row">
         <label class="filter-label" for="bands-search">Search</label>
-        <input
-          id="bands-search"
-          v-model.trim="bandsSearch"
-          type="text"
-          placeholder="Filter by band name..."
-        />
+        <div class="filter-input">
+          <input
+            id="bands-search"
+            v-model.trim="bandsSearch"
+            type="text"
+            placeholder="Filter by band name..."
+          />
+          <button
+            v-if="bandsSearch"
+            class="clear-button"
+            type="button"
+            @click="bandsSearch = ''"
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
+        </div>
       </div>
 
       <div class="pager">
@@ -170,12 +192,23 @@
 
       <div class="filter-row">
         <label class="filter-label" for="acts-search">Search</label>
-        <input
-          id="acts-search"
-          v-model.trim="actsSearch"
-          type="text"
-          placeholder="Filter by band name..."
-        />
+        <div class="filter-input">
+          <input
+            id="acts-search"
+            v-model.trim="actsSearch"
+            type="text"
+            placeholder="Filter by band name..."
+          />
+          <button
+            v-if="actsSearch"
+            class="clear-button"
+            type="button"
+            @click="actsSearch = ''"
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
+        </div>
       </div>
 
       <div class="pager">
@@ -231,12 +264,23 @@
 
       <div class="filter-row">
         <label class="filter-label" for="venues-search">Search</label>
-        <input
-          id="venues-search"
-          v-model.trim="venuesSearch"
-          type="text"
-          placeholder="Filter by venue name..."
-        />
+        <div class="filter-input">
+          <input
+            id="venues-search"
+            v-model.trim="venuesSearch"
+            type="text"
+            placeholder="Filter by venue name..."
+          />
+          <button
+            v-if="venuesSearch"
+            class="clear-button"
+            type="button"
+            @click="venuesSearch = ''"
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
+        </div>
       </div>
 
       <div class="pager">
@@ -288,6 +332,7 @@
       :error="detailsError"
       @close="closeDetails"
       @show-venue="openVenueDetailsFromEvent"
+      @show-band="openBandDetails"
       @update-event="openUpdateEvent"
       @delete-event="confirmDeleteEvent"
     />
@@ -1427,13 +1472,42 @@ async function handleEventUpdated() {
   color: rgba(0, 0, 0, 0.6);
 }
 
+.filter-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
 .filter-row input {
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 6px 10px;
+  padding: 6px 32px 6px 10px;
   min-width: 240px;
   background: var(--card);
   color: var(--text);
+}
+
+.filter-input input {
+  flex: 1;
+}
+
+.clear-button {
+  position: absolute;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 50%;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .pager-group {
@@ -1503,6 +1577,10 @@ async function handleEventUpdated() {
   }
 
   .filter-row {
+    width: 100%;
+  }
+
+  .filter-input {
     width: 100%;
   }
 

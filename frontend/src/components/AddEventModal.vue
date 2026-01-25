@@ -74,14 +74,25 @@
             <label for="venue-search">
               Search venue <span v-if="!useNewVenue" class="required">*</span>
             </label>
-            <input
-              id="venue-search"
-              v-model.trim="venueQuery"
-              type="text"
-              placeholder="Start typing a venue name..."
-              :disabled="useNewVenue"
-              @input="clearSelectedVenue"
-            />
+            <div class="inline-input">
+              <input
+                id="venue-search"
+                v-model.trim="venueQuery"
+                type="text"
+                placeholder="Start typing a venue name..."
+                :disabled="useNewVenue"
+                @input="clearSelectedVenue"
+              />
+              <button
+                v-if="venueQuery && !useNewVenue"
+                type="button"
+                class="clear-button"
+                @click="venueQuery = ''; clearSelectedVenue()"
+                aria-label="Clear venue search"
+              >
+                &times;
+              </button>
+            </div>
             <div v-if="!useNewVenue && venueMatches.length" class="suggestions">
               <button
                 v-for="venue in venueMatches"
@@ -233,13 +244,23 @@
             <div class="band-header">
               <div class="field">
                 <label>Band <span class="required">*</span></label>
-                <input
-                  v-if="band.mode === 'existing'"
-                  v-model.trim="band.query"
-                  type="text"
-                  placeholder="Search band..."
-                  @input="clearSelectedBand(band)"
-                />
+                <div v-if="band.mode === 'existing'" class="inline-input">
+                  <input
+                    v-model.trim="band.query"
+                    type="text"
+                    placeholder="Search band..."
+                    @input="clearSelectedBand(band)"
+                  />
+                  <button
+                    v-if="band.query"
+                    type="button"
+                    class="clear-button"
+                    @click="band.query = ''; clearSelectedBand(band)"
+                    aria-label="Clear band search"
+                  >
+                    &times;
+                  </button>
+                </div>
                 <input
                   v-else
                   v-model.trim="band.newBand.name"
@@ -1162,6 +1183,18 @@ async function save() {
   gap: 6px;
 }
 
+.inline-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.inline-input input {
+  flex: 1;
+  padding-right: 32px;
+}
+
 .field input,
 .field textarea,
 .field select {
@@ -1313,6 +1346,23 @@ async function save() {
   margin-top: 6px;
   font-size: 12px;
   color: rgba(0, 0, 0, 0.65);
+}
+
+.clear-button {
+  position: absolute;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .checkbox {

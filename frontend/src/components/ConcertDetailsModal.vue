@@ -36,41 +36,50 @@
       </div>
 
       <div class="modal-body">
-        <template v-if="details">
-          <div class="section">
-            <div class="section-title">{{ mainActTitle }}</div>
-            <ul class="list">
-              <li v-for="b in mainActs" :key="b.id" class="band-item">
-                <span>{{ b.name }}</span>
-                <span class="band-rating">{{ b.rating ?? "-" }}</span>
-              </li>
-              <li v-if="mainActs.length === 0" class="muted">No main acts recorded.</li>
-            </ul>
-          </div>
+        <div class="band-stack">
+          <template v-if="details">
+            <div class="section">
+              <div class="section-title">{{ mainActTitle }}</div>
+              <ul class="list">
+                <li v-for="b in mainActs" :key="b.id" class="band-item">
+                  <button type="button" class="band-link" @click="$emit('show-band', b.id)">
+                    {{ b.name }}
+                  </button>
+                  <span class="band-rating">{{ b.rating ?? "-" }}</span>
+                </li>
+                <li v-if="mainActs.length === 0" class="muted">No main acts recorded.</li>
+              </ul>
+            </div>
 
-          <div class="section">
-            <div class="section-title">{{ supportersTitle }}</div>
-            <ul class="list">
-              <li v-for="b in supporters" :key="b.id" class="band-item">
-                <span>{{ b.name }}</span>
-                <span class="band-rating">{{ b.rating ?? "-" }}</span>
-              </li>
-              <li v-if="supporters.length === 0" class="muted">No supporters recorded.</li>
-            </ul>
-          </div>
-        </template>
-        <div v-else class="section">
-          <div class="section-title">Bands</div>
-          <div class="muted">Loading...</div>
-        </div>
+            <div class="section">
+              <div class="section-title">{{ supportersTitle }}</div>
+              <ul class="list">
+                <li v-for="b in supporters" :key="b.id" class="band-item">
+                  <button type="button" class="band-link" @click="$emit('show-band', b.id)">
+                    {{ b.name }}
+                  </button>
+                  <span class="band-rating">{{ b.rating ?? "-" }}</span>
+                </li>
+                <li v-if="supporters.length === 0" class="muted">No supporters recorded.</li>
+              </ul>
+            </div>
 
-        <div class="section">
-          <div class="section-title">Participated with</div>
-          <ul v-if="details" class="list participants">
-            <li v-for="p in details.participatedWith" :key="p.id">{{ p.displayName }}</li>
-            <li v-if="details.participatedWith.length === 0" class="muted">No participants recorded.</li>
-          </ul>
-          <div v-else class="muted">Loading...</div>
+            <div class="section">
+              <div class="section-title">Participated with</div>
+              <ul class="list participants">
+                <li v-for="p in details.participatedWith" :key="p.id">
+                  {{ p.displayName }}
+                </li>
+                <li v-if="details.participatedWith.length === 0" class="muted">
+                  No participants recorded.
+                </li>
+              </ul>
+            </div>
+          </template>
+          <div v-else class="section">
+            <div class="section-title">Bands</div>
+            <div class="muted">Loading...</div>
+          </div>
         </div>
 
         <div v-if="error" class="error">
@@ -97,6 +106,7 @@ import type { ConcertDetailsDto } from "../api/types";
 defineEmits<{
   (e: "close"): void;
   (e: "show-venue", venueId: number): void;
+  (e: "show-band", bandId: number): void;
   (e: "update-event"): void;
   (e: "delete-event"): void;
 }>();
@@ -228,6 +238,12 @@ function starFillValue(starIndex: number, rating: number) {
   gap: 16px;
 }
 
+.band-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .section {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 10px;
@@ -266,6 +282,17 @@ function starFillValue(starIndex: number, rating: number) {
   left: 0;
   color: currentColor;
   opacity: 0.7;
+}
+
+.band-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: #0b4da2;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
 }
 
 .band-rating {
