@@ -15,8 +15,8 @@
       "description": "The ID of the Concert-Band from 'ConcertBands' table"
     },
     "setlist": {
-      "type": "object",
-      "description": "A JSON column storing arbitrary key-value pairs (optional)",
+      "type": ["object", "string", "null"],
+      "description": "Setlist payload stored in a text/JSON column (optional)",
       "additionalProperties": true
     },
     "rating": {

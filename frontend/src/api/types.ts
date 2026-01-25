@@ -157,7 +157,7 @@ export interface CreateEventBandEntryDto {
   runningOrder?: number;
   rating?: number | null;
   notes?: string | null;
-  setlist?: Record<string, unknown>;
+  setlist?: string | null;
 }
 
 export interface CreateConcertEventBundleDto {
@@ -186,6 +186,8 @@ export interface ConcertDetailsDto {
   bands: Array<{
     id: number;
     name: string;
+    eventBandId?: number | null;
+    setlist?: string | null;
     mainAct?: boolean | null;
     runningOrder?: number | null;
     rating?: number | null;

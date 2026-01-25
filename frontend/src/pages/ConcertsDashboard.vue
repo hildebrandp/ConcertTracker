@@ -333,6 +333,7 @@
       @close="closeDetails"
       @show-venue="openVenueDetailsFromEvent"
       @show-band="openBandDetails"
+      @refresh-details="refreshSelectedDetails"
       @update-event="openUpdateEvent"
       @delete-event="confirmDeleteEvent"
     />
@@ -1129,6 +1130,17 @@ async function openDetails(concertId: number) {
         details.venueName = fromList.venueName;
       }
     }
+    selectedDetails.value = details;
+  } catch (e: any) {
+    detailsError.value = e?.message ?? "Failed to load concert details.";
+  }
+}
+
+async function refreshSelectedDetails() {
+  if (!selectedDetails.value) return;
+  detailsError.value = null;
+  try {
+    const details = await getConcertDetails(selectedDetails.value.id);
     selectedDetails.value = details;
   } catch (e: any) {
     detailsError.value = e?.message ?? "Failed to load concert details.";

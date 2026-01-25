@@ -170,9 +170,33 @@ const mockDetails: Record<number, ConcertDetailsDto> = {
     venueId: 1,
     venueName: "Some Arena",
     bands: [
-      { id: 1, name: "Heaven Shall Burn", mainAct: true, runningOrder: 3, rating: 9 },
-      { id: 2, name: "Support Band A", mainAct: false, runningOrder: 2, rating: 7 },
-      { id: 3, name: "Support Band B", mainAct: false, runningOrder: 1, rating: 6 },
+      {
+        id: 1,
+        name: "Heaven Shall Burn",
+        eventBandId: 1,
+        setlist: "1. Intro\n2. Voice of the Voiceless\n3. Endzeit",
+        mainAct: true,
+        runningOrder: 3,
+        rating: 9,
+      },
+      {
+        id: 2,
+        name: "Support Band A",
+        eventBandId: 2,
+        setlist: "",
+        mainAct: false,
+        runningOrder: 2,
+        rating: 7,
+      },
+      {
+        id: 3,
+        name: "Support Band B",
+        eventBandId: 3,
+        setlist: "",
+        mainAct: false,
+        runningOrder: 1,
+        rating: 6,
+      },
     ],
     participatedWith: [
       { id: 10, displayName: "Pascal" },
@@ -632,4 +656,31 @@ export async function createEventBand(payload: CreateEventBandDto): Promise<void
     mainAct: payload.main_act,
     runningOrder: payload.running_order,
   });
+}
+
+export async function updateEventBand(
+  eventBandId: number,
+  payload: {
+    event_id: number;
+    band_id: number;
+    setlist?: string | null;
+    rating?: number | null;
+    mainAct?: boolean;
+    runningOrder?: number | null;
+    notes?: string | null;
+  }
+): Promise<void> {
+  if (USE_MOCK) {
+    await sleep(80);
+    const details = Object.values(mockDetails).find((entry) =>
+      entry.bands.some((band) => band.eventBandId === eventBandId)
+    );
+    const band = details?.bands.find((entry) => entry.eventBandId === eventBandId);
+    if (band) {
+      band.setlist = payload.setlist ?? null;
+    }
+    return;
+  }
+
+  await http.put(`/eventBands/${eventBandId}`, payload);
 }

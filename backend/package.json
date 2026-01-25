@@ -1,6 +1,6 @@
 {
   "name": "concerttracker_backend",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Track visited concerts",
   "main": "dist/index.js",
   "scripts": {
