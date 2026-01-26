@@ -32,6 +32,10 @@ body.dark {
   --danger: #ff8a8a;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 body.dark .table-card,
 body.dark .modal,
 body.dark .stat-card,

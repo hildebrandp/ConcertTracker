@@ -373,7 +373,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import StatsRow from "../components/StatsRow.vue";
 import ConcertsTable from "../components/ConcertsTable.vue";
 import BandsTable from "../components/BandsTable.vue";
@@ -479,6 +479,14 @@ const updateOpen = ref(false);
 const updateEventId = ref<number | null>(null);
 const reopenEventId = ref<number | null>(null);
 const darkMode = ref(false);
+const anyModalOpen = computed(
+  () =>
+    detailsOpen.value ||
+    bandDetailsOpen.value ||
+    venueDetailsOpen.value ||
+    createOpen.value ||
+    updateOpen.value
+);
 async function loadAllConcerts() {
   allConcertsLoading.value = true;
   allConcertsError.value = null;
@@ -1110,6 +1118,18 @@ onMounted(() => {
 watch(darkMode, (enabled) => {
   localStorage.setItem("concert-tracker:dark-mode", String(enabled));
   document.body.classList.toggle("dark", enabled);
+});
+
+watch(
+  anyModalOpen,
+  (open) => {
+    document.body.classList.toggle("modal-open", open);
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  document.body.classList.remove("modal-open");
 });
 
 async function openDetails(concertId: number) {
