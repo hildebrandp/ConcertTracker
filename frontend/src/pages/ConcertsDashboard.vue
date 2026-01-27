@@ -24,14 +24,16 @@
 
     <StatsRow
       :stats="stats"
+      :active-view="activeStatsView"
       @show-all-concerts="openAllConcerts"
       @show-all-bands="openAllBands"
       @show-all-acts="openAllActs"
       @show-all-venues="openAllVenues"
+      @show-all-participants="openAllParticipants"
     />
 
     <ConcertsTable
-      v-if="!allConcertsOpen && !allBandsOpen && !allActsOpen && !allVenuesOpen"
+      v-if="!allConcertsOpen && !allBandsOpen && !allActsOpen && !allVenuesOpen && !allParticipantsOpen"
       :concerts="concerts"
       title="Last 10 Concerts"
       :sortable="false"
@@ -64,6 +66,22 @@
           >
             &times;
           </button>
+        </div>
+      </div>
+      <div v-if="concertsParticipantName" class="filter-row">
+        <span class="filter-label">With</span>
+        <div class="filter-input">
+          <div class="pill">
+            {{ concertsParticipantName }}
+            <button
+              type="button"
+              class="pill-clear"
+              @click="clearConcertsParticipantFilter"
+              aria-label="Clear participant filter"
+            >
+              &times;
+            </button>
+          </div>
         </div>
       </div>
 
@@ -326,6 +344,48 @@
       </div>
     </div>
 
+    <div v-else-if="allParticipantsOpen" class="all-concerts">
+      <div class="all-header">
+        <button class="secondary" type="button" @click="closeAllParticipants">
+          Back to dashboard
+        </button>
+        <div v-if="allParticipantsLoading" class="hint">Loading participants...</div>
+      </div>
+
+      <div class="filter-row">
+        <label class="filter-label" for="participants-search">Search</label>
+        <div class="filter-input">
+          <input
+            id="participants-search"
+            v-model.trim="participantsSearch"
+            type="text"
+            placeholder="Filter by participant name..."
+          />
+          <button
+            v-if="participantsSearch"
+            class="clear-button"
+            type="button"
+            @click="participantsSearch = ''"
+            aria-label="Clear search"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+
+      <ParticipantsTable
+        :participants="sortedParticipants"
+        :sort-key="participantsSortKey"
+        :sort-dir="participantsSortDir"
+        @select="openParticipantConcerts"
+        @sort-change="setParticipantsSort"
+      />
+
+      <div v-if="allParticipantsError" class="error">
+        {{ allParticipantsError }}
+      </div>
+    </div>
+
     <ConcertDetailsModal
       :open="detailsOpen"
       :details="selectedDetails"
@@ -334,6 +394,8 @@
       @show-venue="openVenueDetailsFromEvent"
       @show-band="openBandDetails"
       @refresh-details="refreshSelectedDetails"
+      @participant-added="handleParticipantAdded"
+      @participant-removed="handleParticipantRemoved"
       @update-event="openUpdateEvent"
       @delete-event="confirmDeleteEvent"
     />
@@ -383,6 +445,7 @@ import VenueDetailsModal from "../components/VenueDetailsModal.vue";
 import EventBandsTable from "../components/EventBandsTable.vue";
 import ConcertDetailsModal from "../components/ConcertDetailsModal.vue";
 import AddEventModal from "../components/AddEventModal.vue";
+import ParticipantsTable from "../components/ParticipantsTable.vue";
 import {
   getAllConcerts,
   getBandSummaries,
@@ -391,6 +454,8 @@ import {
   getConcertDetails,
   getConcertVenueById,
   getConcertVenues,
+  getConcertParticipants,
+  getEventParticipants,
   clearAllData,
   deleteConcertBand,
   deleteConcertEvent,
@@ -411,7 +476,9 @@ import type {
   ConcertVenueDto,
   CreateConcertBandDto,
   CreateConcertVenueDto,
+  EventParticipantDto,
   EventBandSummaryDto,
+  ParticipantSummaryDto,
   StatsDto,
   VenueSummaryDto,
 } from "../api/types";
@@ -426,6 +493,8 @@ const pageSizeOptions = ["10", "20", "50", "100", "200", "All"] as const;
 const pageSize = ref<(typeof pageSizeOptions)[number]>("20");
 const currentPage = ref(1);
 const concertsSearch = ref("");
+const concertsParticipantId = ref<number | null>(null);
+const concertsParticipantName = ref<string | null>(null);
 const concertsSortKey = ref<"date" | "name" | "venue" | "bands" | "rating">("date");
 const concertsSortDir = ref<"asc" | "desc">("desc");
 const allBands = ref<BandSummaryDto[]>([]);
@@ -458,6 +527,14 @@ const venuesPageSize = ref<(typeof venuesPageSizeOptions)[number]>("20");
 const venuesPage = ref(1);
 const venuesSortKey = ref<"venue" | "lastVisited" | "count" | "rating">("venue");
 const venuesSortDir = ref<"asc" | "desc">("asc");
+const eventParticipants = ref<EventParticipantDto[]>([]);
+const allParticipants = ref<ParticipantSummaryDto[]>([]);
+const allParticipantsOpen = ref(false);
+const allParticipantsLoading = ref(false);
+const allParticipantsError = ref<string | null>(null);
+const participantsSearch = ref("");
+const participantsSortKey = ref<"name" | "count">("name");
+const participantsSortDir = ref<"asc" | "desc">("asc");
 
 const detailsOpen = ref(false);
 const selectedDetails = ref<ConcertDetailsDto | null>(null);
@@ -487,12 +564,23 @@ const anyModalOpen = computed(
     createOpen.value ||
     updateOpen.value
 );
+const activeStatsView = computed<
+  "concerts" | "bands" | "acts" | "venues" | "participants" | null
+>(() => {
+  if (allConcertsOpen.value) return "concerts";
+  if (allBandsOpen.value) return "bands";
+  if (allActsOpen.value) return "acts";
+  if (allVenuesOpen.value) return "venues";
+  if (allParticipantsOpen.value) return "participants";
+  return null;
+});
 async function loadAllConcerts() {
   allConcertsLoading.value = true;
   allConcertsError.value = null;
 
   try {
     allConcerts.value = await getAllConcerts();
+    await syncParticipantCounts();
   } catch (e: any) {
     allConcertsError.value = e?.message ?? "Failed to load all concerts.";
   } finally {
@@ -505,6 +593,7 @@ async function openAllConcerts() {
   allBandsOpen.value = false;
   allActsOpen.value = false;
   allVenuesOpen.value = false;
+  allParticipantsOpen.value = false;
   if (allConcerts.value.length === 0) {
     await loadAllConcerts();
   }
@@ -532,6 +621,7 @@ async function openAllBands() {
   allConcertsOpen.value = false;
   allActsOpen.value = false;
   allVenuesOpen.value = false;
+  allParticipantsOpen.value = false;
   if (allBands.value.length === 0) {
     await loadAllBands();
   }
@@ -635,6 +725,7 @@ async function openAllActs() {
   allConcertsOpen.value = false;
   allBandsOpen.value = false;
   allVenuesOpen.value = false;
+  allParticipantsOpen.value = false;
   if (allActs.value.length === 0) {
     await loadAllActs();
   }
@@ -649,6 +740,7 @@ function closeAllViews() {
   allBandsOpen.value = false;
   allActsOpen.value = false;
   allVenuesOpen.value = false;
+  allParticipantsOpen.value = false;
 }
 
 async function openAllVenues() {
@@ -656,9 +748,76 @@ async function openAllVenues() {
   allConcertsOpen.value = false;
   allBandsOpen.value = false;
   allActsOpen.value = false;
+  allParticipantsOpen.value = false;
   if (allVenues.value.length === 0) {
     await loadAllVenues();
   }
+}
+
+async function loadAllParticipants() {
+  allParticipantsLoading.value = true;
+  allParticipantsError.value = null;
+
+  try {
+    const [participants, eventParticipants] = await Promise.all([
+      getConcertParticipants(),
+      getEventParticipants(),
+    ]);
+    const allConcertsData = await getAllConcerts();
+    const concertById = new Map(
+      allConcertsData.map((concert) => [
+        concert.id,
+        { date: concert.date, name: concert.name },
+      ])
+    );
+    const counts = new Map<number, number>();
+    const lastAttendByParticipant = new Map<
+      number,
+      { date: string; eventName?: string }
+    >();
+    for (const entry of eventParticipants) {
+      counts.set(entry.participant_id, (counts.get(entry.participant_id) ?? 0) + 1);
+      const concert = concertById.get(entry.event_id);
+      if (concert?.date) {
+        const existing = lastAttendByParticipant.get(entry.participant_id);
+        if (!existing || concert.date > existing.date) {
+          lastAttendByParticipant.set(entry.participant_id, {
+            date: concert.date,
+            eventName: concert.name,
+          });
+        }
+      }
+    }
+    allParticipants.value = participants
+      .map((participant) => ({
+        id: participant.id,
+        name: participant.name,
+        eventCount: counts.get(participant.id) ?? 0,
+        lastAttendDate: lastAttendByParticipant.get(participant.id)?.date ?? null,
+        lastAttendEventName:
+          lastAttendByParticipant.get(participant.id)?.eventName ?? null,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  } catch (e: any) {
+    allParticipantsError.value = e?.message ?? "Failed to load participants.";
+  } finally {
+    allParticipantsLoading.value = false;
+  }
+}
+
+async function openAllParticipants() {
+  allParticipantsOpen.value = true;
+  allConcertsOpen.value = false;
+  allBandsOpen.value = false;
+  allActsOpen.value = false;
+  allVenuesOpen.value = false;
+  if (allParticipants.value.length === 0) {
+    await loadAllParticipants();
+  }
+}
+
+function closeAllParticipants() {
+  allParticipantsOpen.value = false;
 }
 
 function closeAllVenues() {
@@ -680,12 +839,21 @@ const totalPages = computed(() => {
 
 const filteredConcerts = computed(() => {
   const q = concertsSearch.value.trim().toLowerCase();
-  if (!q) {
-    return allConcerts.value;
-  }
-  return allConcerts.value.filter((concert) =>
-    concert.name.toLowerCase().includes(q)
-  );
+  const participantId = concertsParticipantId.value;
+  const eventIdsForParticipant = participantId
+    ? new Set(
+        eventParticipants.value
+          .filter((entry) => entry.participant_id === participantId)
+          .map((entry) => entry.event_id)
+      )
+    : null;
+  return allConcerts.value.filter((concert) => {
+    if (eventIdsForParticipant && !eventIdsForParticipant.has(concert.id)) {
+      return false;
+    }
+    if (!q) return true;
+    return concert.name.toLowerCase().includes(q);
+  });
 });
 
 const sortedConcerts = computed(() => {
@@ -878,6 +1046,16 @@ const filteredVenues = computed(() => {
   );
 });
 
+const filteredParticipants = computed(() => {
+  const q = participantsSearch.value.trim().toLowerCase();
+  if (!q) {
+    return allParticipants.value;
+  }
+  return allParticipants.value.filter((participant) =>
+    participant.name.toLowerCase().includes(q)
+  );
+});
+
 const sortedVenues = computed(() => {
   const dir = venuesSortDir.value === "asc" ? 1 : -1;
   return [...filteredVenues.value].sort((a, b) => {
@@ -902,6 +1080,24 @@ const sortedVenues = computed(() => {
         break;
       case "rating":
         result = compareNullable(a.rating, b.rating, (x, y) => x - y);
+        break;
+      default:
+        result = 0;
+    }
+    return result * dir;
+  });
+});
+
+const sortedParticipants = computed(() => {
+  const dir = participantsSortDir.value === "asc" ? 1 : -1;
+  return [...filteredParticipants.value].sort((a, b) => {
+    let result = 0;
+    switch (participantsSortKey.value) {
+      case "name":
+        result = a.name.localeCompare(b.name);
+        break;
+      case "count":
+        result = a.eventCount - b.eventCount;
         break;
       default:
         result = 0;
@@ -993,6 +1189,15 @@ function setActsSort(key: "date" | "band" | "event" | "venue" | "rating") {
 
 function setVenuesSort(key: "venue" | "lastVisited" | "count" | "rating") {
   toggleSort(key, venuesSortKey, venuesSortDir, defaultVenuesSortDir);
+}
+
+function setParticipantsSort(key: "name" | "count") {
+  if (participantsSortKey.value === key) {
+    participantsSortDir.value = participantsSortDir.value === "asc" ? "desc" : "asc";
+    return;
+  }
+  participantsSortKey.value = key;
+  participantsSortDir.value = key === "name" ? "asc" : "desc";
 }
 
 function toggleSort<K extends string>(
@@ -1087,8 +1292,16 @@ function nextVenuesPage() {
 }
 
 async function refreshData() {
-  stats.value = await getStats();
-  concerts.value = await getLastConcerts(10);
+  const [statsResponse, concertsResponse, participants] = await Promise.all([
+    getStats(),
+    getLastConcerts(10),
+    getConcertParticipants(),
+  ]);
+  stats.value = {
+    ...statsResponse,
+    participantsCount: participants.length,
+  };
+  concerts.value = concertsResponse;
 
   if (allConcertsOpen.value || allConcerts.value.length > 0) {
     await loadAllConcerts();
@@ -1101,6 +1314,30 @@ async function refreshData() {
   }
   if (allVenuesOpen.value || allVenues.value.length > 0) {
     await loadAllVenues();
+  }
+  if (allParticipantsOpen.value || allParticipants.value.length > 0) {
+    await loadAllParticipants();
+  }
+  await syncParticipantCounts();
+}
+
+async function syncParticipantCounts() {
+  try {
+    const eventParticipantsResponse = await getEventParticipants();
+    eventParticipants.value = eventParticipantsResponse;
+    const counts = new Map<number, number>();
+    for (const entry of eventParticipantsResponse) {
+      counts.set(entry.event_id, (counts.get(entry.event_id) ?? 0) + 1);
+    }
+    const applyCounts = (items: ConcertListItemDto[]) => {
+      for (const concert of items) {
+        concert.participantCount = counts.get(concert.id) ?? 0;
+      }
+    };
+    applyCounts(concerts.value);
+    applyCounts(allConcerts.value);
+  } catch {
+    // ignore participant count sync errors; core UI still works
   }
 }
 
@@ -1161,6 +1398,17 @@ async function refreshSelectedDetails() {
   detailsError.value = null;
   try {
     const details = await getConcertDetails(selectedDetails.value.id);
+    if (!details.venueId || !details.venueName) {
+      const fromList =
+        allConcerts.value.find((concert) => concert.id === details.id) ??
+        concerts.value.find((concert) => concert.id === details.id);
+      if (fromList?.venueId && !details.venueId) {
+        details.venueId = fromList.venueId;
+      }
+      if (fromList?.venueName && !details.venueName) {
+        details.venueName = fromList.venueName;
+      }
+    }
     selectedDetails.value = details;
   } catch (e: any) {
     detailsError.value = e?.message ?? "Failed to load concert details.";
@@ -1169,6 +1417,76 @@ async function refreshSelectedDetails() {
 
 function closeDetails() {
   detailsOpen.value = false;
+}
+
+function handleParticipantAdded(payload: {
+  eventId: number;
+  participantId: number;
+  participantName: string;
+  isNew: boolean;
+}) {
+  const bump = (items: ConcertListItemDto[]) => {
+    const entry = items.find((concert) => concert.id === payload.eventId);
+    if (entry) {
+      entry.participantCount = (entry.participantCount ?? 0) + 1;
+    }
+  };
+  bump(concerts.value);
+  bump(allConcerts.value);
+  if (payload.isNew && stats.value) {
+    stats.value.participantsCount = (stats.value.participantsCount ?? 0) + 1;
+  }
+  if (allParticipantsOpen.value) {
+    const existing = allParticipants.value.find(
+      (participant) => participant.id === payload.participantId
+    );
+    if (existing) {
+      existing.eventCount += 1;
+      const latestDate = selectedDetails.value?.date ?? null;
+      if (latestDate && (!existing.lastAttendDate || latestDate > existing.lastAttendDate)) {
+        existing.lastAttendDate = latestDate;
+        existing.lastAttendEventName = selectedDetails.value?.name ?? null;
+      }
+    } else if (payload.isNew) {
+      allParticipants.value.push({
+        id: payload.participantId,
+        name: payload.participantName,
+        eventCount: 1,
+        lastAttendDate: selectedDetails.value?.date ?? null,
+        lastAttendEventName: selectedDetails.value?.name ?? null,
+      });
+    }
+  }
+}
+
+async function handleParticipantRemoved(payload: { eventId: number; participantId: number }) {
+  const drop = (items: ConcertListItemDto[]) => {
+    const entry = items.find((concert) => concert.id === payload.eventId);
+    if (entry) {
+      entry.participantCount = Math.max(0, (entry.participantCount ?? 0) - 1);
+    }
+  };
+  drop(concerts.value);
+  drop(allConcerts.value);
+  await syncParticipantCounts();
+  if (allParticipantsOpen.value) {
+    await loadAllParticipants();
+  }
+}
+
+async function openParticipantConcerts(participant: ParticipantSummaryDto) {
+  if (eventParticipants.value.length === 0) {
+    await syncParticipantCounts();
+  }
+  concertsParticipantId.value = participant.id;
+  concertsParticipantName.value = participant.name;
+  concertsSearch.value = "";
+  openAllConcerts();
+}
+
+function clearConcertsParticipantFilter() {
+  concertsParticipantId.value = null;
+  concertsParticipantName.value = null;
 }
 
 async function confirmDeleteEvent() {
@@ -1243,6 +1561,7 @@ async function confirmClearAll() {
     allBands.value = [];
     allActs.value = [];
     allVenues.value = [];
+    allParticipants.value = [];
     await refreshData();
   } catch (e: any) {
     detailsError.value = e?.message ?? "Failed to delete all data.";
@@ -1509,6 +1828,28 @@ async function handleEventUpdated() {
   align-items: center;
   gap: 6px;
   position: relative;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.pill-clear {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
 }
 
 .filter-row input {

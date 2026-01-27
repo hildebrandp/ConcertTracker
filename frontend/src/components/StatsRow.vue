@@ -1,23 +1,53 @@
 ﻿<template>
   <div class="stats-row">
-    <button type="button" class="stat-card clickable" @click="$emit('show-all-concerts')">
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'concerts' }"
+      @click="$emit('show-all-concerts')"
+    >
       <div class="stat-label">Concerts attended</div>
       <div class="stat-value">{{ stats?.concertsAttended ?? "-" }}</div>
     </button>
 
-    <button type="button" class="stat-card clickable" @click="$emit('show-all-bands')">
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'bands' }"
+      @click="$emit('show-all-bands')"
+    >
       <div class="stat-label">Unique Bands seen</div>
       <div class="stat-value">{{ stats?.bandsSeen ?? "-" }}</div>
     </button>
 
-    <button type="button" class="stat-card clickable" @click="$emit('show-all-acts')">
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'acts' }"
+      @click="$emit('show-all-acts')"
+    >
       <div class="stat-label">All live acts</div>
       <div class="stat-value">{{ stats?.actsSeen ?? "-" }}</div>
     </button>
 
-    <button type="button" class="stat-card clickable" @click="$emit('show-all-venues')">
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'venues' }"
+      @click="$emit('show-all-venues')"
+    >
       <div class="stat-label">Total Venues visited</div>
       <div class="stat-value">{{ stats?.venuesSeen ?? "-" }}</div>
+    </button>
+
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'participants' }"
+      @click="$emit('show-all-participants')"
+    >
+      <div class="stat-label">Concert friends</div>
+      <div class="stat-value">{{ stats?.participantsCount ?? "-" }}</div>
     </button>
   </div>
 </template>
@@ -27,6 +57,7 @@ import type { StatsDto } from "../api/types";
 
 defineProps<{
   stats: StatsDto | null;
+  activeView?: "concerts" | "bands" | "acts" | "venues" | "participants" | null;
 }>();
 
 defineEmits<{
@@ -34,13 +65,14 @@ defineEmits<{
   (e: "show-all-bands"): void;
   (e: "show-all-acts"): void;
   (e: "show-all-venues"): void;
+  (e: "show-all-participants"): void;
 }>();
 </script>
 
 <style scoped>
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -63,6 +95,12 @@ defineEmits<{
   border-radius: 10px;
   padding: 14px 16px;
   background: #fff;
+}
+
+.stat-card.is-active {
+  border-width: 2px;
+  border-color: var(--accent);
+  box-shadow: 0 6px 14px rgba(11, 77, 162, 0.14);
 }
 
 .stat-label {

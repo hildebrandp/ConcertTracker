@@ -18,6 +18,11 @@ import type {
   EventBandDetailDto,
   StatsDto,
   EventBandsDto,
+  ConcertParticipantDto,
+  CreateConcertParticipantDto,
+  CreateEventParticipantDto,
+  DeleteEventParticipantDto,
+  EventParticipantDto,
 } from "./types";
 
 /**
@@ -36,7 +41,8 @@ const mockStats: StatsDto = {
   concertsAttended: 42,
   bandsSeen: 128,
   actsSeen: 32,
-  venuesSeen: 4
+  venuesSeen: 4,
+  participantsCount: 3,
 };
 const mockBandSummaries: BandSummaryDto[] = [
   {
@@ -150,16 +156,17 @@ const mockConcerts: ConcertListItemDto[] = [
     rating: 9,
     venueName: "Some Arena",
     bandCount: 3,
+    participantCount: 2,
   },
-  { id: 1002, date: "2025-11-02", name: "The National", rating: 8, bandCount: 1 },
-  { id: 1003, date: "2025-10-12", name: "Powerwolf", rating: 7, bandCount: 2 },
-  { id: 1004, date: "2025-09-01", name: "Architects", rating: 9, bandCount: 2 },
-  { id: 1005, date: "2025-08-17", name: "Bring Me The Horizon", rating: 8, bandCount: 3 },
-  { id: 1006, date: "2025-07-04", name: "Rammstein", rating: 10, bandCount: 2 },
-  { id: 1007, date: "2025-06-22", name: "Ghost", rating: 8, bandCount: 2 },
-  { id: 1008, date: "2025-05-11", name: "Kreator", rating: 7, bandCount: 3 },
-  { id: 1009, date: "2025-04-03", name: "Muse", rating: 8, bandCount: 1 },
-  { id: 1010, date: "2025-03-14", name: "Metallica", rating: 10, bandCount: 1 },
+  { id: 1002, date: "2025-11-02", name: "The National", rating: 8, bandCount: 1, participantCount: 0 },
+  { id: 1003, date: "2025-10-12", name: "Powerwolf", rating: 7, bandCount: 2, participantCount: 0 },
+  { id: 1004, date: "2025-09-01", name: "Architects", rating: 9, bandCount: 2, participantCount: 0 },
+  { id: 1005, date: "2025-08-17", name: "Bring Me The Horizon", rating: 8, bandCount: 3, participantCount: 0 },
+  { id: 1006, date: "2025-07-04", name: "Rammstein", rating: 10, bandCount: 2, participantCount: 0 },
+  { id: 1007, date: "2025-06-22", name: "Ghost", rating: 8, bandCount: 2, participantCount: 0 },
+  { id: 1008, date: "2025-05-11", name: "Kreator", rating: 7, bandCount: 3, participantCount: 0 },
+  { id: 1009, date: "2025-04-03", name: "Muse", rating: 8, bandCount: 1, participantCount: 0 },
+  { id: 1010, date: "2025-03-14", name: "Metallica", rating: 10, bandCount: 1, participantCount: 0 },
 ];
 const mockDetails: Record<number, ConcertDetailsDto> = {
   1001: {
@@ -204,6 +211,18 @@ const mockDetails: Record<number, ConcertDetailsDto> = {
     ],
   },
 };
+const mockParticipants: ConcertParticipantDto[] = [
+  { id: 10, name: "Pascal", notes: "" },
+  { id: 11, name: "Alex", notes: "" },
+  { id: 12, name: "Jamie", notes: "" },
+];
+const mockEventParticipants: EventParticipantDto[] = Object.values(mockDetails).flatMap(
+  (detail) =>
+    detail.participatedWith.map((participant) => ({
+      participant_id: participant.id,
+      event_id: detail.id,
+    }))
+);
 
 const mockEventBandsByEventId: Record<number, EventBandDetailDto[]> = {
   1001: [
@@ -423,6 +442,26 @@ export async function getConcertBands(): Promise<ConcertBandDto[]> {
   return res.data;
 }
 
+export async function getConcertParticipants(): Promise<ConcertParticipantDto[]> {
+  if (USE_MOCK) {
+    await sleep(100);
+    return [...mockParticipants];
+  }
+
+  const res = await http.get<ConcertParticipantDto[]>("/concertParticipants");
+  return res.data;
+}
+
+export async function getEventParticipants(): Promise<EventParticipantDto[]> {
+  if (USE_MOCK) {
+    await sleep(80);
+    return [...mockEventParticipants];
+  }
+
+  const res = await http.get<EventParticipantDto[]>("/eventParticipants");
+  return res.data;
+}
+
 export async function getEventBandsByEventIdDetails(
   eventId: number
 ): Promise<EventBandDetailDto[]> {
@@ -548,6 +587,30 @@ export async function createConcertBand(payload: CreateConcertBandDto): Promise<
   return bandId;
 }
 
+export async function createConcertParticipant(
+  payload: CreateConcertParticipantDto
+): Promise<number> {
+  if (USE_MOCK) {
+    await sleep(100);
+    const id = Date.now();
+    mockParticipants.push({ id, name: payload.name, notes: payload.notes ?? "" });
+    return id;
+  }
+
+  const res = await http.post<{
+    participantId?: string | number;
+    venueId?: string | number;
+    id?: string | number;
+  }>("/concertParticipants", payload);
+  const participantId = Number(res.data?.participantId ?? res.data?.venueId ?? res.data?.id);
+
+  if (!Number.isFinite(participantId)) {
+    throw new Error("Failed to create participant.");
+  }
+
+  return participantId;
+}
+
 export async function createConcertEvent(payload: CreateConcertEventDto): Promise<number> {
   if (USE_MOCK) {
     await sleep(120);
@@ -632,6 +695,59 @@ export async function deleteConcertVenue(venueId: number): Promise<void> {
   }
 
   await http.delete(`/concertVenues/${venueId}`);
+}
+
+export async function createEventParticipant(
+  payload: CreateEventParticipantDto
+): Promise<void> {
+  if (USE_MOCK) {
+    await sleep(80);
+    const details = mockDetails[payload.event_id];
+    const participant = mockParticipants.find((entry) => entry.id === payload.participant_id);
+    if (details && participant) {
+      const already = details.participatedWith.some((p) => p.id === participant.id);
+      if (!already) {
+        details.participatedWith.push({
+          id: participant.id,
+          displayName: participant.name,
+        });
+        mockEventParticipants.push({
+          participant_id: participant.id,
+          event_id: payload.event_id,
+        });
+      }
+    }
+    return;
+  }
+
+  await http.post("/eventParticipants", payload);
+}
+
+export async function deleteEventParticipant(
+  payload: DeleteEventParticipantDto
+): Promise<void> {
+  if (USE_MOCK) {
+    await sleep(60);
+    const details = mockDetails[payload.event_id];
+    if (details) {
+      details.participatedWith = details.participatedWith.filter(
+        (entry) => entry.id !== payload.participant_id
+      );
+    }
+    const index = mockEventParticipants.findIndex(
+      (entry) =>
+        entry.event_id === payload.event_id &&
+        entry.participant_id === payload.participant_id
+    );
+    if (index !== -1) {
+      mockEventParticipants.splice(index, 1);
+    }
+    return;
+  }
+
+  await http.delete(
+    `/eventParticipants/byEvent/${payload.event_id}/participant/${payload.participant_id}`
+  );
 }
 
 export async function clearAllData(): Promise<void> {

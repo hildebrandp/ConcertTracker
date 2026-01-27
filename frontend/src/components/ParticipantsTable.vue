@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="table-card">
     <div class="table-header">
       <h2>{{ title }}</h2>
@@ -8,43 +8,21 @@
     <table class="table">
       <thead>
         <tr>
-          <th :aria-sort="ariaSort('band')">
-            <button class="sort-button" type="button" @click="requestSort('band')">
-              Band
+          <th :aria-sort="ariaSort('name')">
+            <button class="sort-button" type="button" @click="requestSort('name')">
+              Name
               <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("band") }}
+                {{ sortIndicator("name") }}
               </span>
             </button>
           </th>
-          <th style="width: 160px" :aria-sort="ariaSort('lastSeen')">
-            <button class="sort-button" type="button" @click="requestSort('lastSeen')">
-              Last seen
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("lastSeen") }}
-              </span>
-            </button>
-          </th>
-          <th style="width: 90px" :aria-sort="ariaSort('count')">
+          <th style="width: 140px">Last attended</th>
+          <th>Last event</th>
+          <th style="width: 120px" :aria-sort="ariaSort('count')">
             <button class="sort-button" type="button" @click="requestSort('count')">
-              Count
+              Events
               <span class="sort-indicator" aria-hidden="true">
                 {{ sortIndicator("count") }}
-              </span>
-            </button>
-          </th>
-          <th style="width: 200px" :aria-sort="ariaSort('venue')">
-            <button class="sort-button" type="button" @click="requestSort('venue')">
-              Last venue
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("venue") }}
-              </span>
-            </button>
-          </th>
-          <th style="width: 120px" :aria-sort="ariaSort('rating')">
-            <button class="sort-button" type="button" @click="requestSort('rating')">
-              Rating
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("rating") }}
               </span>
             </button>
           </th>
@@ -52,24 +30,21 @@
       </thead>
       <tbody>
         <tr
-          v-for="band in bands"
-          :key="band.band_id"
+          v-for="participant in participants"
+          :key="participant.id"
           class="row"
           role="button"
           tabindex="0"
-          @click="$emit('select', band.band_id)"
+          @click="$emit('select', participant)"
         >
-          <td data-label="Band" class="name">{{ band.band_name }}</td>
-          <td data-label="Last seen">{{ formatDate(band.last_seen_date) }}</td>
-          <td data-label="Count">{{ band.seen_count }}</td>
-          <td data-label="Last venue">{{ band.last_venue_name ?? "-" }}</td>
-          <td data-label="Rating">
-            <span class="rating">{{ band.rating ?? "-" }}</span>
-          </td>
+          <td data-label="Name" class="name">{{ participant.name }}</td>
+          <td data-label="Last attended">{{ formatDate(participant.lastAttendDate) }}</td>
+          <td data-label="Last event">{{ participant.lastAttendEventName || "-" }}</td>
+          <td data-label="Events">{{ participant.eventCount }}</td>
         </tr>
 
-        <tr v-if="bands.length === 0">
-          <td colspan="5" class="empty">No bands found.</td>
+        <tr v-if="participants.length === 0">
+          <td colspan="4" class="empty">No participants found.</td>
         </tr>
       </tbody>
     </table>
@@ -78,45 +53,46 @@
 
 <script setup lang="ts">
 import { toRefs } from "vue";
-import type { BandSummaryDto } from "../api/types";
+import type { ParticipantSummaryDto } from "../api/types";
 
 const props = withDefaults(
   defineProps<{
-    bands: BandSummaryDto[];
+    participants: ParticipantSummaryDto[];
     title?: string;
     hint?: string;
-    sortKey?: "band" | "lastSeen" | "count" | "rating" | "venue";
+    sortKey?: "name" | "count";
     sortDir?: "asc" | "desc";
   }>(),
   {
-    title: "Seen Bands",
-    hint: "Click a row to see details",
-    sortKey: "band",
+    title: "Concert friends",
+    hint: "Unique participants across all events",
+    sortKey: "name",
     sortDir: "asc",
   }
 );
-const { bands, title, hint, sortKey, sortDir } = toRefs(props);
+const { participants, title, hint, sortKey, sortDir } = toRefs(props);
 
 const emit = defineEmits<{
-  (e: "select", bandId: number): void;
-  (e: "sort-change", key: "band" | "lastSeen" | "count" | "rating" | "venue"): void;
+  (e: "select", participant: ParticipantSummaryDto): void;
+  (e: "sort-change", key: "name" | "count"): void;
 }>();
 
-function requestSort(key: "band" | "lastSeen" | "count" | "rating" | "venue") {
+function requestSort(key: "name" | "count") {
   emit("sort-change", key);
 }
 
-function sortIndicator(key: "band" | "lastSeen" | "count" | "rating" | "venue") {
+function sortIndicator(key: "name" | "count") {
   if (sortKey.value !== key) return "";
   return sortDir.value === "asc" ? "^" : "v";
 }
 
-function ariaSort(key: "band" | "lastSeen" | "count" | "rating" | "venue") {
+function ariaSort(key: "name" | "count") {
   if (sortKey.value !== key) return "none";
   return sortDir.value === "asc" ? "ascending" : "descending";
 }
 
-function formatDate(iso: string) {
+function formatDate(iso?: string | null) {
+  if (!iso) return "-";
   return iso.length >= 10 ? iso.slice(0, 10) : iso;
 }
 </script>
@@ -183,17 +159,12 @@ function formatDate(iso: string) {
   background: rgba(0, 0, 0, 0.03);
 }
 
-.name {
-  font-weight: 600;
+.row {
+  cursor: pointer;
 }
 
-.rating {
-  display: inline-block;
-  min-width: 36px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  text-align: center;
+.name {
+  font-weight: 600;
 }
 
 .empty {
@@ -250,8 +221,3 @@ function formatDate(iso: string) {
   }
 }
 </style>
-
-
-
-
-

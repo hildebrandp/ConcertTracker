@@ -21,6 +21,4 @@ TODO:
     - DB size info
     - Show software version
     - Show that there is a update
-- Live acts view click on event opens event, click on Band opens Band...
-- Add participants feature
 - Add Stats page

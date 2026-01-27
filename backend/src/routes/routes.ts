@@ -4,7 +4,7 @@ import { get_AllConcertEvents, get_ConcertEvent_ById, create_ConcertEvent, updat
 import { get_AllConcertParticipants, get_ConcertParticipant_ById, create_ConcertParticipant, update_ConcertParticipant_ById } from '../controllers/concertParticipants';
 import { get_AllConcertVenues, get_ConcertVenue_ById, create_ConcertVenue, update_ConcertVenue_ById, delete_ConcertVenue_ById } from '../controllers/concertVenues';
 import { get_AllEventBands, get_EventBand_ById, create_EventBand, update_EventBand_ById, get_AllEventBands_ByEventId, get_AllEventBands_Details_ByEventId } from '../controllers/eventBands';
-import { get_AllEventParticipants, get_EventParticipant_ById, create_EventParticipant, update_EventParticipant_ById } from '../controllers/eventParticipants';
+import { get_AllEventParticipants, get_EventParticipant_ById, create_EventParticipant, update_EventParticipant_ById, delete_EventParticipant_ByEventAndParticipant } from '../controllers/eventParticipants';
 import { get_StatsOverview } from '../controllers/statsOverview';
 import { get_BandSummaries } from '../controllers/bandSummaries';
 import { get_EventBandSummaries } from '../controllers/eventBandSummaries';
@@ -55,6 +55,7 @@ router.get('/eventParticipants', get_AllEventParticipants);
 router.get('/eventParticipants/:id', get_EventParticipant_ById);
 router.post('/eventParticipants/', create_EventParticipant);
 router.put('/eventParticipants/:id', update_EventParticipant_ById);
+router.delete('/eventParticipants/byEvent/:eventId/participant/:participantId', delete_EventParticipant_ByEventAndParticipant);
 
 // API routes for Stats-Overview
 router.get('/statsOverview', get_StatsOverview);

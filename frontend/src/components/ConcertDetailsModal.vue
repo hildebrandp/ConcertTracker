@@ -85,22 +85,56 @@
                 <li v-if="supporters.length === 0" class="muted">No supporters recorded.</li>
               </ul>
             </div>
-
-            <div class="section">
-              <div class="section-title">Participated with</div>
-              <ul class="list participants">
-                <li v-for="p in details.participatedWith" :key="p.id">
-                  {{ p.displayName }}
-                </li>
-                <li v-if="details.participatedWith.length === 0" class="muted">
-                  No participants recorded.
-                </li>
-              </ul>
-            </div>
           </template>
           <div v-else class="section">
             <div class="section-title">Bands</div>
             <div class="muted">Loading...</div>
+          </div>
+        </div>
+
+        <div class="participants-panel">
+          <div class="section">
+            <div class="section-title">Participated with</div>
+            <ul v-if="details" class="list participants">
+              <li v-for="p in details.participatedWith" :key="p.id" class="participant-item">
+                <span>{{ p.displayName }}</span>
+                <button
+                  type="button"
+                  class="participant-remove"
+                  :disabled="participantRemoving[p.id]"
+                  @click="removeParticipant(p)"
+                >
+                  {{ participantRemoving[p.id] ? "Removing..." : "Remove" }}
+                </button>
+              </li>
+              <li v-if="details.participatedWith.length === 0" class="muted">
+                No participants recorded.
+              </li>
+            </ul>
+            <div v-else class="muted">Loading...</div>
+
+            <form v-if="details" class="participant-form" @submit.prevent="addParticipant">
+              <label class="participant-label" for="participant-name">Add participant</label>
+              <div class="participant-input">
+                <input
+                  id="participant-name"
+                  v-model.trim="participantName"
+                  list="participant-options"
+                  type="text"
+                  placeholder="Start typing a name..."
+                  :disabled="participantAdding"
+                />
+                <button type="submit" class="secondary" :disabled="participantAdding">
+                  {{ participantAdding ? "Adding..." : "Add" }}
+                </button>
+              </div>
+              <datalist id="participant-options">
+                <option v-for="option in availableParticipants" :key="option.id" :value="option.name">
+                  {{ option.name }}
+                </option>
+              </datalist>
+              <div v-if="participantError" class="error-inline">{{ participantError }}</div>
+            </form>
           </div>
         </div>
 
@@ -172,9 +206,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRefs } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 import type { ConcertDetailsDto } from "../api/types";
-import { updateEventBand } from "../api/concertsApi";
+import type { ConcertParticipantDto } from "../api/types";
+import {
+  createConcertParticipant,
+  createEventParticipant,
+  deleteEventParticipant,
+  getConcertParticipants,
+  updateEventBand,
+} from "../api/concertsApi";
 
 const emit = defineEmits<{
   (e: "close"): void;
@@ -183,6 +224,13 @@ const emit = defineEmits<{
   (e: "refresh-details"): void;
   (e: "update-event"): void;
   (e: "delete-event"): void;
+  (e: "participant-added", payload: {
+    eventId: number;
+    participantId: number;
+    participantName: string;
+    isNew: boolean;
+  }): void;
+  (e: "participant-removed", payload: { eventId: number; participantId: number }): void;
 }>();
 
 const props = defineProps<{
@@ -220,6 +268,11 @@ const setlistBand = ref<EventBandEntry | null>(null);
 const setlistDraft = ref("");
 const setlistError = ref<string | null>(null);
 const setlistSaving = ref(false);
+const participants = ref<ConcertParticipantDto[]>([]);
+const participantAdding = ref(false);
+const participantName = ref("");
+const participantError = ref<string | null>(null);
+const participantRemoving = ref<Record<number, boolean>>({});
 
 const setlistDisplay = computed(() =>
   normalizeSetlistLines(setlistBand.value?.setlist ?? "").map((line) =>
@@ -229,6 +282,15 @@ const setlistDisplay = computed(() =>
 const setlistDate = computed(() => {
   if (!details.value?.date) return "";
   return details.value.date.slice(0, 10);
+});
+
+const availableParticipants = computed(() => {
+  const existing = new Set(
+    (details.value?.participatedWith ?? []).map((entry) => entry.id)
+  );
+  return participants.value
+    .filter((participant) => !existing.has(participant.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 function starFillValue(starIndex: number, rating: number) {
@@ -252,6 +314,20 @@ function closeSetlist() {
   setlistDraft.value = "";
   setlistError.value = null;
 }
+
+watch(
+  open,
+  async (isOpen) => {
+    if (!isOpen) return;
+    participantError.value = null;
+    try {
+      participants.value = await getConcertParticipants();
+    } catch (e: any) {
+      participantError.value = e?.message ?? "Failed to load participants.";
+    }
+  },
+  { immediate: true }
+);
 
 function normalizeSetlistLines(text: string) {
   return text
@@ -331,6 +407,89 @@ async function saveSetlist() {
     setlistError.value = e?.message ?? "Failed to save setlist.";
   } finally {
     setlistSaving.value = false;
+  }
+}
+
+async function addParticipant() {
+  if (!details.value) return;
+  const name = participantName.value.trim();
+  if (!name) {
+    participantError.value = "Enter a participant name.";
+    return;
+  }
+
+  const alreadyAdded = details.value.participatedWith.some(
+    (entry) => entry.displayName.toLowerCase() === name.toLowerCase()
+  );
+  if (alreadyAdded) {
+    participantError.value = "Participant already added.";
+    return;
+  }
+
+  participantAdding.value = true;
+  participantError.value = null;
+
+  try {
+    const existing = participants.value.find(
+      (participant) => participant.name.toLowerCase() === name.toLowerCase()
+    );
+    const participantId =
+      existing?.id ??
+      (await createConcertParticipant({
+        name,
+        notes: "",
+      }));
+    const isNew = !existing;
+    if (isNew) {
+      participants.value.push({ id: participantId, name, notes: "" });
+    }
+    await createEventParticipant({
+      participant_id: participantId,
+      event_id: details.value.id,
+    });
+    participantName.value = "";
+    emit("participant-added", {
+      eventId: details.value.id,
+      participantId,
+      participantName: name,
+      isNew,
+    });
+    emit("refresh-details");
+  } catch (e: any) {
+    participantError.value = e?.message ?? "Failed to add participant.";
+  } finally {
+    participantAdding.value = false;
+  }
+}
+
+async function removeParticipant(participant: { id: number; displayName: string }) {
+  if (!details.value) return;
+  const ok = window.confirm(
+    `Remove "${participant.displayName}" from this event?`
+  );
+  if (!ok) return;
+  participantRemoving.value = {
+    ...participantRemoving.value,
+    [participant.id]: true,
+  };
+  participantError.value = null;
+  try {
+    await deleteEventParticipant({
+      participant_id: participant.id,
+      event_id: details.value.id,
+    });
+    emit("participant-removed", {
+      eventId: details.value.id,
+      participantId: participant.id,
+    });
+    emit("refresh-details");
+  } catch (e: any) {
+    participantError.value = e?.message ?? "Failed to remove participant.";
+  } finally {
+    participantRemoving.value = {
+      ...participantRemoving.value,
+      [participant.id]: false,
+    };
   }
 }
 </script>
@@ -453,8 +612,77 @@ async function saveSetlist() {
 }
 
 .participants {
+  padding-left: 0;
+  list-style: none;
+}
+
+.participant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  position: relative;
   padding-left: 16px;
-  list-style: disc;
+}
+
+.participant-item::before {
+  content: "\2022";
+  position: absolute;
+  left: 0;
+  color: currentColor;
+  opacity: 0.8;
+}
+
+.participant-remove {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.participant-remove:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.participants-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.participant-form {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.participant-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.participant-input {
+  display: flex;
+  gap: 8px;
+}
+
+.participant-input input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.error-inline {
+  font-size: 12px;
+  color: #7a0b0b;
 }
 
 .band-item {

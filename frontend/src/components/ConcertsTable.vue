@@ -64,6 +64,7 @@
             </button>
             <span v-else>Bands</span>
           </th>
+          <th style="width: 140px">Participants</th>
           <th style="width: 120px" :aria-sort="sortable ? ariaSort('rating') : undefined">
             <button
               v-if="sortable"
@@ -93,13 +94,14 @@
           <td data-label="Concert" class="name">{{ c.name }}</td>
           <td data-label="Venue">{{ c.venueName ?? "-" }}</td>
           <td data-label="Bands">{{ c.bandCount ?? "-" }}</td>
+          <td data-label="Participants">{{ c.participantCount ?? "-" }}</td>
           <td data-label="Rating">
             <span class="rating">{{ c.rating }}</span>
           </td>
         </tr>
 
         <tr v-if="concerts.length === 0">
-          <td colspan="5" class="empty">No concerts found.</td>
+          <td colspan="6" class="empty">No concerts found.</td>
         </tr>
       </tbody>
     </table>

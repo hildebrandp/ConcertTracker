@@ -144,3 +144,34 @@ export const update_EventParticipant_ById = async (req: Request, res: Response) 
         if (connection) connection.end();
     }
 };
+
+export const delete_EventParticipant_ByEventAndParticipant = async (
+    req: Request,
+    res: Response
+) => {
+    const { eventId, participantId } = req.params;
+    let connection;
+
+    if (isNaN(Number(eventId)) || isNaN(Number(participantId))) {
+        res.status(400).send({ message: 'Invalid ID format' });
+        return;
+    }
+
+    try {
+        connection = await getConnection();
+        const query = `DELETE FROM ${table_name} WHERE event_id = ? AND participant_id = ?`;
+        const result = await connection.query(query, [eventId, participantId]);
+
+        if (result.affectedRows === 0) {
+            res.status(404).json({ message: 'Event-Participant not found' });
+            return;
+        }
+
+        res.status(200).json({ message: 'Event-Participant deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting Event-Participant:', error);
+        res.status(500).json({ message: 'Database error' });
+    } finally {
+        if (connection) connection.end();
+    }
+};

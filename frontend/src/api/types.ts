@@ -5,6 +5,7 @@ export interface StatsDto {
   bandsSeen: number;
   actsSeen: number;
   venuesSeen: number;
+  participantsCount?: number;
   // Optional: add more later (venuesVisited, citiesVisited, etc.)
 }
 
@@ -16,6 +17,7 @@ export interface ConcertListItemDto {
   venueId?: number;
   venueName?: string;
   bandCount?: number;
+  participantCount?: number;
 }
 
 export interface ConcertEventDto {
@@ -106,6 +108,41 @@ export interface ConcertBandDetailsDto {
   notes?: string | null;
   link?: string | null;
   website?: string | null;
+}
+
+export interface ConcertParticipantDto {
+  id: number;
+  name: string;
+  notes?: string | null;
+}
+
+export interface CreateConcertParticipantDto {
+  name: string;
+  notes?: string | null;
+}
+
+export interface CreateEventParticipantDto {
+  participant_id: number;
+  event_id: number;
+}
+
+export interface EventParticipantDto {
+  id?: number;
+  participant_id: number;
+  event_id: number;
+}
+
+export interface DeleteEventParticipantDto {
+  participant_id: number;
+  event_id: number;
+}
+
+export interface ParticipantSummaryDto {
+  id: number;
+  name: string;
+  eventCount: number;
+  lastAttendDate?: string | null;
+  lastAttendEventName?: string | null;
 }
 
 export interface CreateConcertEventDto {
