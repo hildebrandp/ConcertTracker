@@ -37,6 +37,23 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+async function mockReturn<T>(value: T, delay = 100) {
+  await sleep(delay);
+  return value;
+}
+
+async function mockDelay(delay = 100) {
+  await sleep(delay);
+}
+
+function parseId(value: unknown, errorMessage: string) {
+  const id = Number(value);
+  if (!Number.isFinite(id)) {
+    throw new Error(errorMessage);
+  }
+  return id;
+}
+
 const mockStats: StatsDto = {
   concertsAttended: 42,
   bandsSeen: 128,
@@ -252,8 +269,7 @@ const mockEventBandsByEventId: Record<number, EventBandDetailDto[]> = {
 
 export async function getStats(): Promise<StatsDto> {
   if (USE_MOCK) {
-    await sleep(150);
-    return mockStats;
+    return mockReturn(mockStats, 150);
   }
 
   /**
@@ -268,8 +284,7 @@ export async function getStats(): Promise<StatsDto> {
 
 export async function getLastConcerts(limit = 10): Promise<ConcertListItemDto[]> {
   if (USE_MOCK) {
-    await sleep(200);
-    return mockConcerts.slice(0, limit);
+    return mockReturn(mockConcerts.slice(0, limit), 200);
   }
 
   /**
@@ -286,8 +301,7 @@ export async function getLastConcerts(limit = 10): Promise<ConcertListItemDto[]>
 
 export async function getAllConcerts(): Promise<ConcertListItemDto[]> {
   if (USE_MOCK) {
-    await sleep(200);
-    return mockConcerts;
+    return mockReturn(mockConcerts, 200);
   }
 
   const res = await http.get<ConcertEventDto[]>("/concertEvents");
@@ -341,8 +355,7 @@ async function mapConcertOverviewData(
 
 export async function getBandSummaries(): Promise<BandSummaryDto[]> {
   if (USE_MOCK) {
-    await sleep(150);
-    return mockBandSummaries;
+    return mockReturn(mockBandSummaries, 150);
   }
 
   /**
@@ -356,8 +369,7 @@ export async function getBandSummaries(): Promise<BandSummaryDto[]> {
 
 export async function getEventBandSummaries(): Promise<EventBandSummaryDto[]> {
   if (USE_MOCK) {
-    await sleep(150);
-    return mockEventBandSummaries;
+    return mockReturn(mockEventBandSummaries, 150);
   }
 
   /**
@@ -371,8 +383,7 @@ export async function getEventBandSummaries(): Promise<EventBandSummaryDto[]> {
 
 export async function getConcertDetails(concertId: number): Promise<ConcertDetailsDto> {
   if (USE_MOCK) {
-    await sleep(150);
-
+    await mockDelay(150);
     const details = mockDetails[concertId];
     if (!details) {
       // fallback mock
@@ -406,7 +417,7 @@ export async function getConcertDetails(concertId: number): Promise<ConcertDetai
 
 export async function getConcertEventById(concertId: number): Promise<ConcertEventDto> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     const fallback = mockConcerts.find((concert) => concert.id === concertId);
     return {
       id: concertId,
@@ -424,8 +435,7 @@ export async function getConcertEventById(concertId: number): Promise<ConcertEve
 
 export async function getConcertVenues(): Promise<ConcertVenueDto[]> {
   if (USE_MOCK) {
-    await sleep(100);
-    return mockVenues;
+    return mockReturn(mockVenues, 100);
   }
 
   const res = await http.get<ConcertVenueDto[]>("/concertVenues");
@@ -434,8 +444,10 @@ export async function getConcertVenues(): Promise<ConcertVenueDto[]> {
 
 export async function getConcertBands(): Promise<ConcertBandDto[]> {
   if (USE_MOCK) {
-    await sleep(100);
-    return Object.values(mockBandDetailsById).map(({ id, name }) => ({ id, name }));
+    return mockReturn(
+      Object.values(mockBandDetailsById).map(({ id, name }) => ({ id, name })),
+      100
+    );
   }
 
   const res = await http.get<ConcertBandDto[]>("/concertBands");
@@ -444,8 +456,7 @@ export async function getConcertBands(): Promise<ConcertBandDto[]> {
 
 export async function getConcertParticipants(): Promise<ConcertParticipantDto[]> {
   if (USE_MOCK) {
-    await sleep(100);
-    return [...mockParticipants];
+    return mockReturn([...mockParticipants], 100);
   }
 
   const res = await http.get<ConcertParticipantDto[]>("/concertParticipants");
@@ -454,8 +465,7 @@ export async function getConcertParticipants(): Promise<ConcertParticipantDto[]>
 
 export async function getEventParticipants(): Promise<EventParticipantDto[]> {
   if (USE_MOCK) {
-    await sleep(80);
-    return [...mockEventParticipants];
+    return mockReturn([...mockEventParticipants], 80);
   }
 
   const res = await http.get<EventParticipantDto[]>("/eventParticipants");
@@ -466,8 +476,7 @@ export async function getEventBandsByEventIdDetails(
   eventId: number
 ): Promise<EventBandDetailDto[]> {
   if (USE_MOCK) {
-    await sleep(100);
-    return mockEventBandsByEventId[eventId] ?? [];
+    return mockReturn(mockEventBandsByEventId[eventId] ?? [], 100);
   }
 
   const res = await http.get<EventBandDetailDto[]>(
@@ -480,7 +489,7 @@ export async function getConcertBandById(
   bandId: number
 ): Promise<ConcertBandDetailsDto> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     return (
       mockBandDetailsById[bandId] ?? {
         id: bandId,
@@ -503,7 +512,7 @@ export async function getConcertVenueById(
   venueId: number
 ): Promise<ConcertVenueDetailsDto> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     return (
       mockVenueDetailsById[venueId] ?? {
         id: venueId,
@@ -534,7 +543,7 @@ export async function updateConcertBand(
   payload: CreateConcertBandDto
 ): Promise<void> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     mockBandDetailsById[bandId] = { id: bandId, ...payload };
     return;
   }
@@ -547,7 +556,7 @@ export async function updateConcertVenue(
   payload: CreateConcertVenueDto
 ): Promise<void> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     mockVenueDetailsById[venueId] = { id: venueId, ...payload };
     return;
   }
@@ -557,41 +566,29 @@ export async function updateConcertVenue(
 
 export async function createConcertVenue(payload: CreateConcertVenueDto): Promise<number> {
   if (USE_MOCK) {
-    await sleep(100);
+    await mockDelay(100);
     return Date.now();
   }
 
   const res = await http.post<{ venueId?: string | number }>("/concertVenues", payload);
-  const venueId = Number(res.data?.venueId);
-
-  if (!Number.isFinite(venueId)) {
-    throw new Error("Failed to create venue.");
-  }
-
-  return venueId;
+  return parseId(res.data?.venueId, "Failed to create venue.");
 }
 
 export async function createConcertBand(payload: CreateConcertBandDto): Promise<number> {
   if (USE_MOCK) {
-    await sleep(100);
+    await mockDelay(100);
     return Date.now();
   }
 
   const res = await http.post<{ bandId?: string | number }>("/concertBands", payload);
-  const bandId = Number(res.data?.bandId);
-
-  if (!Number.isFinite(bandId)) {
-    throw new Error("Failed to create band.");
-  }
-
-  return bandId;
+  return parseId(res.data?.bandId, "Failed to create band.");
 }
 
 export async function createConcertParticipant(
   payload: CreateConcertParticipantDto
 ): Promise<number> {
   if (USE_MOCK) {
-    await sleep(100);
+    await mockDelay(100);
     const id = Date.now();
     mockParticipants.push({ id, name: payload.name, notes: payload.notes ?? "" });
     return id;
@@ -602,36 +599,27 @@ export async function createConcertParticipant(
     venueId?: string | number;
     id?: string | number;
   }>("/concertParticipants", payload);
-  const participantId = Number(res.data?.participantId ?? res.data?.venueId ?? res.data?.id);
-
-  if (!Number.isFinite(participantId)) {
-    throw new Error("Failed to create participant.");
-  }
-
-  return participantId;
+  return parseId(
+    res.data?.participantId ?? res.data?.venueId ?? res.data?.id,
+    "Failed to create participant."
+  );
 }
 
 export async function createConcertEvent(payload: CreateConcertEventDto): Promise<number> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     return Date.now();
   }
 
   const res = await http.post<{ eventId?: string | number }>("/concertEvents", payload);
-  const eventId = Number(res.data?.eventId);
-
-  if (!Number.isFinite(eventId)) {
-    throw new Error("Failed to create event.");
-  }
-
-  return eventId;
+  return parseId(res.data?.eventId, "Failed to create event.");
 }
 
 export async function createConcertEventWithBands(
   payload: CreateConcertEventBundleDto
 ): Promise<CreateConcertEventBundleResponseDto> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     return {
       message: "Concert-Event bundle created successfully",
       eventId: Date.now(),
@@ -653,7 +641,7 @@ export async function updateConcertEventWithBands(
   payload: CreateConcertEventBundleDto
 ): Promise<CreateConcertEventBundleResponseDto> {
   if (USE_MOCK) {
-    await sleep(120);
+    await mockDelay(120);
     return {
       message: "Concert-Event bundle updated successfully",
       eventId,
@@ -672,7 +660,7 @@ export async function updateConcertEventWithBands(
 
 export async function deleteConcertEvent(eventId: number): Promise<void> {
   if (USE_MOCK) {
-    await sleep(80);
+    await mockDelay(80);
     return;
   }
 
@@ -681,7 +669,7 @@ export async function deleteConcertEvent(eventId: number): Promise<void> {
 
 export async function deleteConcertBand(bandId: number): Promise<void> {
   if (USE_MOCK) {
-    await sleep(80);
+    await mockDelay(80);
     return;
   }
 
@@ -690,7 +678,7 @@ export async function deleteConcertBand(bandId: number): Promise<void> {
 
 export async function deleteConcertVenue(venueId: number): Promise<void> {
   if (USE_MOCK) {
-    await sleep(80);
+    await mockDelay(80);
     return;
   }
 
@@ -701,7 +689,7 @@ export async function createEventParticipant(
   payload: CreateEventParticipantDto
 ): Promise<void> {
   if (USE_MOCK) {
-    await sleep(80);
+    await mockDelay(80);
     const details = mockDetails[payload.event_id];
     const participant = mockParticipants.find((entry) => entry.id === payload.participant_id);
     if (details && participant) {
@@ -727,7 +715,7 @@ export async function deleteEventParticipant(
   payload: DeleteEventParticipantDto
 ): Promise<void> {
   if (USE_MOCK) {
-    await sleep(60);
+    await mockDelay(60);
     const details = mockDetails[payload.event_id];
     if (details) {
       details.participatedWith = details.participatedWith.filter(
@@ -752,7 +740,7 @@ export async function deleteEventParticipant(
 
 export async function clearAllData(): Promise<void> {
   if (USE_MOCK) {
-    await sleep(80);
+    await mockDelay(80);
     return;
   }
 
@@ -761,7 +749,7 @@ export async function clearAllData(): Promise<void> {
 
 export async function createEventBand(payload: CreateEventBandDto): Promise<void> {
   if (USE_MOCK) {
-    await sleep(50);
+    await mockDelay(50);
     return;
   }
 
@@ -787,7 +775,7 @@ export async function updateEventBand(
   }
 ): Promise<void> {
   if (USE_MOCK) {
-    await sleep(80);
+    await mockDelay(80);
     const details = Object.values(mockDetails).find((entry) =>
       entry.bands.some((band) => band.eventBandId === eventBandId)
     );

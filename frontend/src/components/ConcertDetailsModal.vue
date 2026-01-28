@@ -36,107 +36,28 @@
       </div>
 
       <div class="modal-body">
-        <div class="band-stack">
-          <template v-if="details">
-            <div class="section">
-              <div class="section-title">{{ mainActTitle }}</div>
-              <ul class="list">
-                <li v-for="b in mainActs" :key="b.id" class="band-item">
-                  <button type="button" class="band-link" @click="$emit('show-band', b.id)">
-                    {{ b.name }}
-                  </button>
-                  <div class="band-actions">
-                    <span class="band-rating">{{ b.rating ?? "-" }}</span>
-                    <button
-                      type="button"
-                      class="band-rating setlist-button"
-                      :class="{ 'setlist-ready': hasSetlist(b) }"
-                      :disabled="!b.eventBandId"
-                      @click="openSetlist(b)"
-                    >
-                      Setlist
-                    </button>
-                  </div>
-                </li>
-                <li v-if="mainActs.length === 0" class="muted">No main acts recorded.</li>
-              </ul>
-            </div>
+        <ConcertDetailsBands
+          :details="details"
+          :main-acts="mainActs"
+          :supporters="supporters"
+          :main-act-title="mainActTitle"
+          :supporters-title="supportersTitle"
+          :has-setlist="hasSetlist"
+          @show-band="$emit('show-band', $event)"
+          @open-setlist="openSetlist"
+        />
 
-            <div class="section">
-              <div class="section-title">{{ supportersTitle }}</div>
-              <ul class="list">
-                <li v-for="b in supporters" :key="b.id" class="band-item">
-                  <button type="button" class="band-link" @click="$emit('show-band', b.id)">
-                    {{ b.name }}
-                  </button>
-                  <div class="band-actions">
-                    <span class="band-rating">{{ b.rating ?? "-" }}</span>
-                    <button
-                      type="button"
-                      class="band-rating setlist-button"
-                      :class="{ 'setlist-ready': hasSetlist(b) }"
-                      :disabled="!b.eventBandId"
-                      @click="openSetlist(b)"
-                    >
-                      Setlist
-                    </button>
-                  </div>
-                </li>
-                <li v-if="supporters.length === 0" class="muted">No supporters recorded.</li>
-              </ul>
-            </div>
-          </template>
-          <div v-else class="section">
-            <div class="section-title">Bands</div>
-            <div class="muted">Loading...</div>
-          </div>
-        </div>
-
-        <div class="participants-panel">
-          <div class="section">
-            <div class="section-title">Participated with</div>
-            <ul v-if="details" class="list participants">
-              <li v-for="p in details.participatedWith" :key="p.id" class="participant-item">
-                <span>{{ p.displayName }}</span>
-                <button
-                  type="button"
-                  class="participant-remove"
-                  :disabled="participantRemoving[p.id]"
-                  @click="removeParticipant(p)"
-                >
-                  {{ participantRemoving[p.id] ? "Removing..." : "Remove" }}
-                </button>
-              </li>
-              <li v-if="details.participatedWith.length === 0" class="muted">
-                No participants recorded.
-              </li>
-            </ul>
-            <div v-else class="muted">Loading...</div>
-
-            <form v-if="details" class="participant-form" @submit.prevent="addParticipant">
-              <label class="participant-label" for="participant-name">Add participant</label>
-              <div class="participant-input">
-                <input
-                  id="participant-name"
-                  v-model.trim="participantName"
-                  list="participant-options"
-                  type="text"
-                  placeholder="Start typing a name..."
-                  :disabled="participantAdding"
-                />
-                <button type="submit" class="secondary" :disabled="participantAdding">
-                  {{ participantAdding ? "Adding..." : "Add" }}
-                </button>
-              </div>
-              <datalist id="participant-options">
-                <option v-for="option in availableParticipants" :key="option.id" :value="option.name">
-                  {{ option.name }}
-                </option>
-              </datalist>
-              <div v-if="participantError" class="error-inline">{{ participantError }}</div>
-            </form>
-          </div>
-        </div>
+        <ConcertParticipantsPanel
+          :details="details"
+          :available-participants="availableParticipants"
+          :participant-name="participantName"
+          :participant-adding="participantAdding"
+          :participant-error="participantError"
+          :participant-removing="participantRemoving"
+          @update:participantName="participantName = $event"
+          @add-participant="addParticipant"
+          @remove-participant="removeParticipant"
+        />
 
         <div v-if="error" class="error">
           {{ error }}
@@ -153,62 +74,30 @@
       </div>
     </div>
   </div>
-  <div v-if="setlistOpen" class="setlist-backdrop" @click.self="closeSetlist">
-    <div class="setlist-modal" role="dialog" aria-modal="true">
-      <div class="setlist-header">
-        <div>
-          <div class="setlist-title">
-            Setlist: {{ setlistBand?.name ?? "Band" }}
-          </div>
-          <div class="setlist-sub">
-            {{ setlistDate }}
-          </div>
-        </div>
-        <button type="button" class="close" @click="closeSetlist">Close</button>
-      </div>
-      <div class="setlist-body">
-        <div class="setlist-section">
-          <div class="setlist-label">Songs</div>
-          <ol v-if="setlistDisplay.length" class="setlist-list">
-            <li v-for="(song, index) in setlistDisplay" :key="index">
-              {{ song }}
-            </li>
-          </ol>
-          <div v-else class="muted">No setlist saved yet.</div>
-        </div>
-        <div v-if="setlistEditOpen" class="setlist-section">
-          <div class="setlist-label">Update setlist</div>
-          <textarea
-            v-model="setlistDraft"
-            class="setlist-input"
-            rows="8"
-            placeholder="Enter one song per line..."
-          ></textarea>
-          <div class="setlist-hint">Songs are auto-numbered when saved.</div>
-          <div v-if="setlistError" class="error">{{ setlistError }}</div>
-          <div class="setlist-actions">
-            <button type="button" class="secondary" @click="cancelEditSetlist">
-              Cancel
-            </button>
-            <button type="button" class="primary" :disabled="setlistSaving" @click="saveSetlist">
-              {{ setlistSaving ? "Saving..." : "Save setlist" }}
-            </button>
-          </div>
-        </div>
-        <div v-else class="setlist-actions">
-          <button type="button" class="secondary" @click="startEditSetlist">
-            Update setlist
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <SetlistModal
+    :open="setlistOpen"
+    :band="setlistBand"
+    :setlist-display="setlistDisplay"
+    :setlist-date="setlistDate"
+    :setlist-edit-open="setlistEditOpen"
+    :setlist-draft="setlistDraft"
+    :setlist-saving="setlistSaving"
+    :setlist-error="setlistError"
+    @close="closeSetlist"
+    @start-edit="startEditSetlist"
+    @cancel-edit="cancelEditSetlist"
+    @save="saveSetlist"
+    @update:setlistDraft="setlistDraft = $event"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, ref, toRefs, watch } from "vue";
 import type { ConcertDetailsDto } from "../api/types";
 import type { ConcertParticipantDto } from "../api/types";
+import ConcertDetailsBands from "./concert-details/ConcertDetailsBands.vue";
+import ConcertParticipantsPanel from "./concert-details/ConcertParticipantsPanel.vue";
+import SetlistModal from "./concert-details/SetlistModal.vue";
 import {
   createConcertParticipant,
   createEventParticipant,
@@ -588,172 +477,6 @@ async function removeParticipant(participant: { id: number; displayName: string 
   gap: 16px;
 }
 
-.band-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.section {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-}
-
-.section-title {
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.list {
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
-}
-
-.participants {
-  padding-left: 0;
-  list-style: none;
-}
-
-.participant-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  padding-left: 16px;
-}
-
-.participant-item::before {
-  content: "\2022";
-  position: absolute;
-  left: 0;
-  color: currentColor;
-  opacity: 0.8;
-}
-
-.participant-remove {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.participant-remove:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.participants-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.participant-form {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.participant-label {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.participant-input {
-  display: flex;
-  gap: 8px;
-}
-
-.participant-input input {
-  flex: 1;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 10px;
-  background: var(--card);
-  color: var(--text);
-}
-
-.error-inline {
-  font-size: 12px;
-  color: #7a0b0b;
-}
-
-.band-item {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 0;
-  padding-left: 14px;
-}
-
-.band-item::before {
-  content: "\2022";
-  position: absolute;
-  left: 0;
-  color: currentColor;
-  opacity: 0.7;
-}
-
-.band-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.band-link {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  color: #0b4da2;
-  text-decoration: underline;
-  cursor: pointer;
-  text-align: left;
-}
-
-.band-rating {
-  min-width: 36px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  text-align: center;
-  font-size: 12px;
-  color: var(--text);
-}
-
-.setlist-button {
-  appearance: none;
-  background: transparent;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  cursor: pointer;
-  color: inherit;
-}
-
-.band-actions .setlist-button.setlist-ready {
-  border-color: #2e7d32;
-}
-
-:global(body.dark) .band-actions .setlist-button.setlist-ready {
-  border-color: #6fdc8c;
-}
-
-.setlist-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .muted {
   color: rgba(0, 0, 0, 0.55);
   font-size: 13px;
@@ -774,18 +497,18 @@ async function removeParticipant(participant: { id: number; displayName: string 
   gap: 10px;
 }
 
-.secondary {
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #fff;
+.primary {
+  background: #111;
+  color: #fff;
+  border: 1px solid #111;
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
 }
 
-.primary {
-  background: #111;
-  color: #fff;
-  border: 1px solid #111;
+.secondary {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
@@ -798,91 +521,6 @@ async function removeParticipant(participant: { id: number; displayName: string 
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
-}
-
-.setlist-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 18px;
-  z-index: 10;
-}
-
-.setlist-modal {
-  width: min(720px, 100%);
-  background: var(--card);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  color: var(--text);
-}
-
-.setlist-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.setlist-title {
-  font-size: 25px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.setlist-sub {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.setlist-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.setlist-section {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-}
-
-.setlist-label {
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.setlist-list {
-  margin: 0;
-  padding-left: 18px;
-}
-
-.setlist-input {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 14px;
-  resize: vertical;
-}
-
-.setlist-hint {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.setlist-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
 }
 
 @media (max-width: 720px) {
@@ -903,20 +541,7 @@ async function removeParticipant(participant: { id: number; displayName: string 
     flex-direction: column;
   }
 
-  .secondary,
   .danger {
-    width: 100%;
-  }
-
-  .setlist-modal {
-    width: 100%;
-  }
-
-  .setlist-actions {
-    flex-direction: column;
-  }
-
-  .primary {
     width: 100%;
   }
 }

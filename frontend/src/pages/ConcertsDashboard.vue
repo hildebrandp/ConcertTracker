@@ -40,351 +40,109 @@
       @select="openDetails"
     />
 
-    <div v-else-if="allConcertsOpen" class="all-concerts">
-      <div class="all-header">
-        <button class="secondary" type="button" @click="closeAllConcerts">
-          Back to dashboard
-        </button>
-        <div v-if="allConcertsLoading" class="hint">Loading all concerts...</div>
-      </div>
+    <AllConcertsView
+      v-else-if="allConcertsOpen"
+      :loading="allConcertsLoading"
+      :error="allConcertsError"
+      :page-size-options="pageSizeOptions"
+      :page-size="pageSize"
+      :current-page="currentPage"
+      :total-pages="totalPages"
+      :is-all-pages="isAllPages"
+      :concerts="paginatedConcerts"
+      :sort-key="concertsSortKey"
+      :sort-dir="concertsSortDir"
+      :search="concertsSearch"
+      :participant-name="concertsParticipantName"
+      @close="closeAllConcerts"
+      @update:pageSize="pageSize = $event"
+      @update:search="concertsSearch = $event"
+      @prev-page="prevPage"
+      @next-page="nextPage"
+      @sort-change="setConcertsSort"
+      @select="openDetails"
+      @clear-participant-filter="clearConcertsParticipantFilter"
+    />
 
-      <div class="filter-row">
-        <label class="filter-label" for="concerts-search">Search</label>
-        <div class="filter-input">
-          <input
-            id="concerts-search"
-            v-model.trim="concertsSearch"
-            type="text"
-            placeholder="Filter by concert name..."
-          />
-          <button
-            v-if="concertsSearch"
-            class="clear-button"
-            type="button"
-            @click="concertsSearch = ''"
-            aria-label="Clear search"
-          >
-            &times;
-          </button>
-        </div>
-      </div>
-      <div v-if="concertsParticipantName" class="filter-row">
-        <span class="filter-label">With</span>
-        <div class="filter-input">
-          <div class="pill">
-            {{ concertsParticipantName }}
-            <button
-              type="button"
-              class="pill-clear"
-              @click="clearConcertsParticipantFilter"
-              aria-label="Clear participant filter"
-            >
-              &times;
-            </button>
-          </div>
-        </div>
-      </div>
+    <AllBandsView
+      v-else-if="allBandsOpen"
+      :loading="allBandsLoading"
+      :error="allBandsError"
+      :page-size-options="bandPageSizeOptions"
+      :page-size="bandPageSize"
+      :current-page="bandPage"
+      :total-pages="totalBandPages"
+      :is-all-pages="isAllBandPages"
+      :bands="paginatedBands"
+      :sort-key="bandsSortKey"
+      :sort-dir="bandsSortDir"
+      :search="bandsSearch"
+      @close="closeAllBands"
+      @update:pageSize="bandPageSize = $event"
+      @update:search="bandsSearch = $event"
+      @prev-page="prevBandPage"
+      @next-page="nextBandPage"
+      @sort-change="setBandsSort"
+      @select="openBandDetails"
+    />
 
-      <div class="pager">
-        <div class="pager-group">
-          <label class="pager-label" for="page-size">Per page</label>
-          <select id="page-size" v-model="pageSize">
-            <option v-for="option in pageSizeOptions" :key="option" :value="option">
-              {{ option }}
-            </option>
-          </select>
-        </div>
-        <div class="pager-group">
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllPages || currentPage === 1"
-            @click="prevPage"
-          >
-            Prev
-          </button>
-          <div class="pager-meta">Page {{ currentPage }} of {{ totalPages }}</div>
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllPages || currentPage === totalPages"
-            @click="nextPage"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+    <AllActsView
+      v-else-if="allActsOpen"
+      :loading="allActsLoading"
+      :error="allActsError"
+      :page-size-options="actsPageSizeOptions"
+      :page-size="actsPageSize"
+      :current-page="actsPage"
+      :total-pages="totalActsPages"
+      :is-all-pages="isAllActsPages"
+      :entries="paginatedActs"
+      :sort-key="actsSortKey"
+      :sort-dir="actsSortDir"
+      :search="actsSearch"
+      @close="closeAllActs"
+      @update:pageSize="actsPageSize = $event"
+      @update:search="actsSearch = $event"
+      @prev-page="prevActsPage"
+      @next-page="nextActsPage"
+      @sort-change="setActsSort"
+      @select="openDetails"
+    />
 
-      <ConcertsTable
-        :concerts="paginatedConcerts"
-        :sort-key="concertsSortKey"
-        :sort-dir="concertsSortDir"
-        @sort-change="setConcertsSort"
-        @select="openDetails"
-      />
+    <AllVenuesView
+      v-else-if="allVenuesOpen"
+      :loading="allVenuesLoading"
+      :error="allVenuesError"
+      :page-size-options="venuesPageSizeOptions"
+      :page-size="venuesPageSize"
+      :current-page="venuesPage"
+      :total-pages="totalVenuesPages"
+      :is-all-pages="isAllVenuesPages"
+      :venues="paginatedVenues"
+      :sort-key="venuesSortKey"
+      :sort-dir="venuesSortDir"
+      :search="venuesSearch"
+      @close="closeAllVenues"
+      @update:pageSize="venuesPageSize = $event"
+      @update:search="venuesSearch = $event"
+      @prev-page="prevVenuesPage"
+      @next-page="nextVenuesPage"
+      @sort-change="setVenuesSort"
+      @select="openVenueDetails"
+    />
 
-      <div v-if="allConcertsError" class="error">
-        {{ allConcertsError }}
-      </div>
-    </div>
-
-    <div v-else-if="allBandsOpen" class="all-concerts">
-      <div class="all-header">
-        <button class="secondary" type="button" @click="closeAllBands">
-          Back to dashboard
-        </button>
-        <div v-if="allBandsLoading" class="hint">Loading bands...</div>
-      </div>
-
-      <div class="filter-row">
-        <label class="filter-label" for="bands-search">Search</label>
-        <div class="filter-input">
-          <input
-            id="bands-search"
-            v-model.trim="bandsSearch"
-            type="text"
-            placeholder="Filter by band name..."
-          />
-          <button
-            v-if="bandsSearch"
-            class="clear-button"
-            type="button"
-            @click="bandsSearch = ''"
-            aria-label="Clear search"
-          >
-            &times;
-          </button>
-        </div>
-      </div>
-
-      <div class="pager">
-        <div class="pager-group">
-          <label class="pager-label" for="band-page-size">Per page</label>
-          <select id="band-page-size" v-model="bandPageSize">
-            <option v-for="option in bandPageSizeOptions" :key="option" :value="option">
-              {{ option }}
-            </option>
-          </select>
-        </div>
-        <div class="pager-group">
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllBandPages || bandPage === 1"
-            @click="prevBandPage"
-          >
-            Prev
-          </button>
-          <div class="pager-meta">Page {{ bandPage }} of {{ totalBandPages }}</div>
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllBandPages || bandPage === totalBandPages"
-            @click="nextBandPage"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-
-      <BandsTable
-        :bands="paginatedBands"
-        :sort-key="bandsSortKey"
-        :sort-dir="bandsSortDir"
-        @sort-change="setBandsSort"
-        @select="openBandDetails"
-      />
-
-      <div v-if="allBandsError" class="error">
-        {{ allBandsError }}
-      </div>
-    </div>
-
-    <div v-else-if="allActsOpen" class="all-concerts">
-      <div class="all-header">
-        <button class="secondary" type="button" @click="closeAllActs">
-          Back to dashboard
-        </button>
-        <div v-if="allActsLoading" class="hint">Loading bands...</div>
-      </div>
-
-      <div class="filter-row">
-        <label class="filter-label" for="acts-search">Search</label>
-        <div class="filter-input">
-          <input
-            id="acts-search"
-            v-model.trim="actsSearch"
-            type="text"
-            placeholder="Filter by band name..."
-          />
-          <button
-            v-if="actsSearch"
-            class="clear-button"
-            type="button"
-            @click="actsSearch = ''"
-            aria-label="Clear search"
-          >
-            &times;
-          </button>
-        </div>
-      </div>
-
-      <div class="pager">
-        <div class="pager-group">
-          <label class="pager-label" for="acts-page-size">Per page</label>
-          <select id="acts-page-size" v-model="actsPageSize">
-            <option v-for="option in actsPageSizeOptions" :key="option" :value="option">
-              {{ option }}
-            </option>
-          </select>
-        </div>
-        <div class="pager-group">
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllActsPages || actsPage === 1"
-            @click="prevActsPage"
-          >
-            Prev
-          </button>
-          <div class="pager-meta">Page {{ actsPage }} of {{ totalActsPages }}</div>
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllActsPages || actsPage === totalActsPages"
-            @click="nextActsPage"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-
-      <EventBandsTable
-        :entries="paginatedActs"
-        :sort-key="actsSortKey"
-        :sort-dir="actsSortDir"
-        @sort-change="setActsSort"
-        @select="openDetails"
-      />
-
-      <div v-if="allActsError" class="error">
-        {{ allActsError }}
-      </div>
-    </div>
-
-    <div v-else-if="allVenuesOpen" class="all-concerts">
-      <div class="all-header">
-        <button class="secondary" type="button" @click="closeAllVenues">
-          Back to dashboard
-        </button>
-        <div v-if="allVenuesLoading" class="hint">Loading venues...</div>
-      </div>
-
-      <div class="filter-row">
-        <label class="filter-label" for="venues-search">Search</label>
-        <div class="filter-input">
-          <input
-            id="venues-search"
-            v-model.trim="venuesSearch"
-            type="text"
-            placeholder="Filter by venue name..."
-          />
-          <button
-            v-if="venuesSearch"
-            class="clear-button"
-            type="button"
-            @click="venuesSearch = ''"
-            aria-label="Clear search"
-          >
-            &times;
-          </button>
-        </div>
-      </div>
-
-      <div class="pager">
-        <div class="pager-group">
-          <label class="pager-label" for="venues-page-size">Per page</label>
-          <select id="venues-page-size" v-model="venuesPageSize">
-            <option v-for="option in venuesPageSizeOptions" :key="option" :value="option">
-              {{ option }}
-            </option>
-          </select>
-        </div>
-        <div class="pager-group">
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllVenuesPages || venuesPage === 1"
-            @click="prevVenuesPage"
-          >
-            Prev
-          </button>
-          <div class="pager-meta">Page {{ venuesPage }} of {{ totalVenuesPages }}</div>
-          <button
-            class="secondary"
-            type="button"
-            :disabled="isAllVenuesPages || venuesPage === totalVenuesPages"
-            @click="nextVenuesPage"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-
-      <VenuesTable
-        :venues="paginatedVenues"
-        :sort-key="venuesSortKey"
-        :sort-dir="venuesSortDir"
-        @sort-change="setVenuesSort"
-        @select="openVenueDetails"
-      />
-
-      <div v-if="allVenuesError" class="error">
-        {{ allVenuesError }}
-      </div>
-    </div>
-
-    <div v-else-if="allParticipantsOpen" class="all-concerts">
-      <div class="all-header">
-        <button class="secondary" type="button" @click="closeAllParticipants">
-          Back to dashboard
-        </button>
-        <div v-if="allParticipantsLoading" class="hint">Loading participants...</div>
-      </div>
-
-      <div class="filter-row">
-        <label class="filter-label" for="participants-search">Search</label>
-        <div class="filter-input">
-          <input
-            id="participants-search"
-            v-model.trim="participantsSearch"
-            type="text"
-            placeholder="Filter by participant name..."
-          />
-          <button
-            v-if="participantsSearch"
-            class="clear-button"
-            type="button"
-            @click="participantsSearch = ''"
-            aria-label="Clear search"
-          >
-            &times;
-          </button>
-        </div>
-      </div>
-
-      <ParticipantsTable
-        :participants="sortedParticipants"
-        :sort-key="participantsSortKey"
-        :sort-dir="participantsSortDir"
-        @select="openParticipantConcerts"
-        @sort-change="setParticipantsSort"
-      />
-
-      <div v-if="allParticipantsError" class="error">
-        {{ allParticipantsError }}
-      </div>
-    </div>
+    <AllParticipantsView
+      v-else-if="allParticipantsOpen"
+      :loading="allParticipantsLoading"
+      :error="allParticipantsError"
+      :participants="sortedParticipants"
+      :sort-key="participantsSortKey"
+      :sort-dir="participantsSortDir"
+      :search="participantsSearch"
+      @close="closeAllParticipants"
+      @update:search="participantsSearch = $event"
+      @select="openParticipantConcerts"
+      @sort-change="setParticipantsSort"
+    />
 
     <ConcertDetailsModal
       :open="detailsOpen"
@@ -438,14 +196,15 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import StatsRow from "../components/StatsRow.vue";
 import ConcertsTable from "../components/ConcertsTable.vue";
-import BandsTable from "../components/BandsTable.vue";
-import VenuesTable from "../components/VenuesTable.vue";
+import ConcertDetailsModal from "../components/ConcertDetailsModal.vue";
 import BandDetailsModal from "../components/BandDetailsModal.vue";
 import VenueDetailsModal from "../components/VenueDetailsModal.vue";
-import EventBandsTable from "../components/EventBandsTable.vue";
-import ConcertDetailsModal from "../components/ConcertDetailsModal.vue";
 import AddEventModal from "../components/AddEventModal.vue";
-import ParticipantsTable from "../components/ParticipantsTable.vue";
+import AllConcertsView from "../components/dashboard/AllConcertsView.vue";
+import AllBandsView from "../components/dashboard/AllBandsView.vue";
+import AllActsView from "../components/dashboard/AllActsView.vue";
+import AllVenuesView from "../components/dashboard/AllVenuesView.vue";
+import AllParticipantsView from "../components/dashboard/AllParticipantsView.vue";
 import {
   getAllConcerts,
   getBandSummaries,
@@ -1791,141 +1550,6 @@ async function handleEventUpdated() {
   }
 }
 
-.all-concerts {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.all-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-label {
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.filter-input {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  position: relative;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px 10px;
-  background: var(--card);
-  color: var(--text);
-  font-size: 13px;
-}
-
-.pill-clear {
-  border: none;
-  background: transparent;
-  padding: 0;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  color: inherit;
-}
-
-.filter-row input {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 6px 32px 6px 10px;
-  min-width: 240px;
-  background: var(--card);
-  color: var(--text);
-}
-
-.filter-input input {
-  flex: 1;
-}
-
-.clear-button {
-  position: absolute;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  border-radius: 50%;
-  padding: 0;
-  font-size: 16px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.pager-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pager-label {
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.pager-meta {
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.pager select {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 6px 10px;
-  background: var(--card);
-  color: var(--text);
-}
-
-.pager select option {
-  background: var(--card);
-  color: var(--text);
-}
-
-.secondary {
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #fff;
-  border-radius: 10px;
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.error {
-  border: 1px solid rgba(180, 0, 0, 0.35);
-  background: rgba(180, 0, 0, 0.06);
-  padding: 10px 12px;
-  border-radius: 10px;
-}
 @media (max-width: 720px) {
   .page {
     padding: 14px;
@@ -1944,37 +1568,6 @@ async function handleEventUpdated() {
     justify-content: space-between;
   }
 
-  .all-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .filter-row {
-    width: 100%;
-  }
-
-  .filter-input {
-    width: 100%;
-  }
-
-  .filter-row input {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .pager {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .pager-group {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .pager select {
-    width: 100%;
-  }
 }
 </style>
 

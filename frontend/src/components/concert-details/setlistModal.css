@@ -1,0 +1,135 @@
+.setlist-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
+  z-index: 10;
+}
+
+.setlist-modal {
+  width: min(720px, 100%);
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  color: var(--text);
+}
+
+.setlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.setlist-title {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.setlist-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.setlist-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setlist-section {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.setlist-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.setlist-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.setlist-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.setlist-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.setlist-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.close {
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.secondary {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.primary {
+  background: #111;
+  color: #fff;
+  border: 1px solid #111;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.error {
+  border: 1px solid rgba(180, 0, 0, 0.35);
+  background: rgba(180, 0, 0, 0.06);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.muted {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .setlist-modal {
+    width: 100%;
+  }
+
+  .setlist-actions {
+    flex-direction: column;
+  }
+
+  .primary {
+    width: 100%;
+  }
+}

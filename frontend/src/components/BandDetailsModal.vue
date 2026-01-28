@@ -11,150 +11,19 @@
       <div class="modal-body">
         <div v-if="!band" class="muted">Loading...</div>
         <div v-else>
-          <div v-if="!isEditing" class="details">
-            <div class="detail">
-              <div class="detail-label">Rating</div>
-              <div class="detail-value rating-display">
-                <span>{{ band.rating ?? "-" }}</span>
-                <div class="star-readonly" v-if="band.rating !== null && band.rating !== undefined">
-                  <span
-                    v-for="star in 5"
-                    :key="star"
-                    class="star-icon"
-                    :style="{ '--fill': `${starFillValue(star, band.rating)}%` }"
-                  >
-                    ★
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Genre</div>
-              <div class="detail-value">{{ band.genre || "-" }}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Origin country</div>
-              <div class="detail-value">{{ band.origin_country || "-" }}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Plex Link</div>
-              <div class="detail-value">
-                <a
-                  v-if="band.link"
-                  :href="normalizeUrl(band.link)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {{ band.link }}
-                </a>
-                <span v-else>-</span>
-              </div>
-            </div>
-            <div class="detail full">
-              <div class="detail-label">Website</div>
-              <div class="detail-value">
-                <a
-                  v-if="band.website"
-                  :href="normalizeUrl(band.website)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {{ band.website }}
-                </a>
-                <span v-else>-</span>
-              </div>
-            </div>
-            <div class="detail full">
-              <div class="detail-label">Notes</div>
-              <div class="detail-value">{{ band.notes || "-" }}</div>
-            </div>
-            <div class="detail">
-              <div class="detail-label">Seen live</div>
-              <div class="detail-value">
-                <button
-                  type="button"
-                  class="link-button"
-                  :disabled="!seenCount"
-                  @click="showBandActs"
-                >
-                  {{ seenCount }} time{{ seenCount === 1 ? "" : "s" }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <form v-else class="grid" @submit.prevent="submit">
-            <div class="field">
-              <label for="band-name">Name</label>
-              <input
-                id="band-name"
-                v-model.trim="form.name"
-                type="text"
-                required
-              />
-            </div>
-          <div class="field">
-            <label for="band-genre">Genre</label>
-            <input id="band-genre" v-model.trim="form.genre" type="text" list="band-genre-options" />
-          </div>
-          <div class="field">
-            <label for="band-origin">Origin country</label>
-            <input
-              id="band-origin"
-              v-model.trim="form.origin_country"
-              type="text"
-              list="band-origin-options"
-            />
-          </div>
-            <div class="field">
-              <label for="band-rating">Rating</label>
-              <div
-                class="star-rating"
-                role="radiogroup"
-                aria-label="Band rating"
-                @mouseleave="hoverRating = null"
-              >
-                <span v-for="star in 5" :key="star" class="star">
-                  <span
-                    class="star-icon"
-                    :style="{ '--fill': `${starFill(star)}%` }"
-                  >
-                    ★
-                  </span>
-                  <button
-                    type="button"
-                    class="half left"
-                    :aria-label="`Set rating to ${star * 2 - 1}`"
-                    @click="setRating(star * 2 - 1)"
-                    @mouseenter="setHover(star * 2 - 1)"
-                  ></button>
-                  <button
-                    type="button"
-                    class="half right"
-                    :aria-label="`Set rating to ${star * 2}`"
-                    @click="setRating(star * 2)"
-                    @mouseenter="setHover(star * 2)"
-                  ></button>
-                </span>
-                <button type="button" class="star-clear" @click="setRating(0)">
-                  Clear
-                </button>
-              </div>
-              <div class="rating-hint">0-10 (half stars)</div>
-            </div>
-            <div class="field full">
-              <label for="band-link">Plex Link</label>
-              <input id="band-link" v-model.trim="form.link" type="text" />
-            </div>
-            <div class="field full">
-              <label for="band-website">Website</label>
-              <input id="band-website" v-model.trim="form.website" type="text" />
-            </div>
-            <div class="field full">
-              <label for="band-notes">Notes</label>
-              <textarea id="band-notes" v-model.trim="form.notes" rows="3" />
-            </div>
-          </form>
+          <BandDetailsDisplay
+            v-if="!isEditing"
+            :band="band"
+            :seen-count="seenCount"
+            @show-acts="showBandActs"
+          />
+          <BandDetailsForm
+            v-else
+            :form="form"
+            :hover-rating="hoverRating"
+            @update:hoverRating="hoverRating = $event"
+            @submit="submit"
+          />
         </div>
 
         <div v-if="error" class="error">
@@ -209,6 +78,8 @@ import type {
   CreateConcertBandDto,
   EventBandSummaryDto,
 } from "../api/types";
+import BandDetailsDisplay from "./band-details/BandDetailsDisplay.vue";
+import BandDetailsForm from "./band-details/BandDetailsForm.vue";
 
 const props = defineProps<{
   open: boolean;
@@ -279,14 +150,6 @@ function showBandActs() {
 }
 const hoverRating = ref<number | null>(null);
 
-const ratingValue = computed(() => {
-  const base = hoverRating.value ?? Number(form.rating);
-  if (!Number.isFinite(base)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(10, base));
-});
-
 watch(
   () => [props.open, props.band],
   () => {
@@ -340,38 +203,6 @@ function submit() {
   });
 }
 
-function setRating(value: number) {
-  if (value <= 0) {
-    form.rating = "";
-    return;
-  }
-  form.rating = String(value);
-}
-
-function setHover(value: number) {
-  hoverRating.value = value;
-}
-
-function normalizeUrl(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return trimmed;
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
-  return `https://${trimmed}`;
-}
-
-function starFill(starIndex: number) {
-  const value = ratingValue.value;
-  const starValue = Math.max(0, Math.min(2, value - (starIndex - 1) * 2));
-  return (starValue / 2) * 100;
-}
-
-function starFillValue(starIndex: number, rating: number) {
-  const value = Math.max(0, Math.min(10, rating));
-  const starValue = Math.max(0, Math.min(2, value - (starIndex - 1) * 2));
-  return (starValue / 2) * 100;
-}
 </script>
 
 <style scoped>
@@ -428,151 +259,6 @@ function starFillValue(starIndex: number, rating: number) {
   gap: 16px;
 }
 
-.details {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.detail {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.detail.full {
-  grid-column: 1 / -1;
-}
-
-.detail-label {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.detail-value {
-  font-size: 14px;
-}
-
-.detail-value a {
-  color: #0b4da2;
-  text-decoration: underline;
-}
-
-.link-button {
-  border: none;
-  background: none;
-  padding: 0;
-  font-size: 14px;
-  color: #0b4da2;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.link-button:disabled {
-  color: rgba(0, 0, 0, 0.4);
-  text-decoration: none;
-  cursor: default;
-}
-
-.rating-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.star-readonly {
-  display: flex;
-  gap: 4px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field.full {
-  grid-column: 1 / -1;
-}
-
-.field input,
-.field textarea {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  font-size: 14px;
-}
-
-.star-rating {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.star {
-  position: relative;
-  width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.star-icon {
-  position: relative;
-  font-size: 20px;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.2);
-}
-
-.star-icon::after {
-  content: "★";
-  position: absolute;
-  inset: 0;
-  width: var(--fill, 0%);
-  overflow: hidden;
-  color: #f5a623;
-}
-
-.half {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 50%;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-.half.left {
-  left: 0;
-}
-
-.half.right {
-  right: 0;
-}
-
-.star-clear {
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #fff;
-  border-radius: 999px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.rating-hint {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
-}
-
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -618,14 +304,6 @@ function starFillValue(starIndex: number, rating: number) {
 }
 
 @media (max-width: 720px) {
-  .details {
-    grid-template-columns: 1fr;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
   .modal-footer {
     flex-direction: column;
   }
@@ -637,3 +315,5 @@ function starFillValue(starIndex: number, rating: number) {
   }
 }
 </style>
+
+

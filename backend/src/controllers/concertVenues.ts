@@ -11,6 +11,46 @@ const schema_ConcertVenue_FilePath = path.resolve(__dirname, "../types/schemas/C
 
 const validator = new JSONSchemaValidator();
 
+const isInvalidId = (id: string | string[] | undefined) => {
+    const value = Array.isArray(id) ? id[0] : id;
+    if (!value) return true;
+    return Number.isNaN(Number(value));
+};
+
+const normalizeVenueData = (venueData: any) => ({
+    name: venueData.name,
+    address: venueData.address ?? null,
+    city: venueData.city ?? null,
+    state: venueData.state ?? null,
+    country: venueData.country ?? null,
+    postal_code: venueData.postal_code ?? null,
+    type: venueData.type ?? null,
+    indoor_outdoor: venueData.indoor_outdoor ?? null,
+    capacity: venueData.capacity ?? null,
+    website: venueData.website ?? null,
+    notes: venueData.notes ?? null,
+    latitude: venueData.latitude ?? null,
+    longitude: venueData.longitude ?? null,
+    rating: venueData.rating ?? null,
+});
+
+const venueValues = (venue: ReturnType<typeof normalizeVenueData>) => ([
+    venue.name,
+    venue.address,
+    venue.city,
+    venue.state,
+    venue.country,
+    venue.postal_code,
+    venue.type,
+    venue.indoor_outdoor,
+    venue.capacity,
+    venue.website,
+    venue.notes,
+    venue.latitude,
+    venue.longitude,
+    venue.rating,
+]);
+
 export const get_AllConcertVenues = async (req: Request, res: Response) => {
     let connection;
     try {
@@ -18,8 +58,8 @@ export const get_AllConcertVenues = async (req: Request, res: Response) => {
         const rows = await connection.query(`SELECT * FROM ${table_name_ConcertVenues}`);
         res.json(rows);
     } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).send('Error fetching users');
+        console.error('Error fetching venues:', error);
+        res.status(500).send('Error fetching venues');
     } finally {
         if (connection) connection.end();
     }
@@ -29,7 +69,7 @@ export const get_ConcertVenue_ById = async (req: Request, res: Response) => {
     const { id } = req.params; // Get the 'id' parameter from the request
     let connection;
 
-    if (isNaN(Number(id))) {
+    if (isInvalidId(id)) {
         res.status(400).send({ message: 'Invalid ID format' });
         return;
     }
@@ -41,12 +81,13 @@ export const get_ConcertVenue_ById = async (req: Request, res: Response) => {
 
         if (rows.length === 0) {
             res.status(404).send({ message: 'Concert-Venue not found' });
+            return;
         }
 
         res.json(rows[0]); // Send the first result
     } catch (error) {
-        console.error('Error fetching user:', error);
-        res.status(500).send('Error fetching user');
+        console.error('Error fetching venue:', error);
+        res.status(500).send('Error fetching venue');
     } finally {
         if (connection) connection.end();
     }
@@ -63,21 +104,7 @@ export const create_ConcertVenue = async (req: Request, res: Response) => {
         return;
     }
 
-    const { name,
-        address = null,
-        city = null,
-        state = null,
-        country = null,
-        postal_code = null,
-        type = null,
-        indoor_outdoor = null,
-        capacity = null,
-        website = null,
-        notes = null,
-        latitude = null,
-        longitude = null,
-        rating = null
-    } = venueData;
+    const venue = normalizeVenueData(venueData);
 
     let connection;
 
@@ -88,8 +115,7 @@ export const create_ConcertVenue = async (req: Request, res: Response) => {
         const query = `INSERT INTO ${table_name_ConcertVenues} (name, address, city, state, country, postal_code, type, 
             indoor_outdoor, capacity, website, notes, latitude, longitude, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        const result = await connection.query(query, [name, address, city, state, country, postal_code,
-            type, indoor_outdoor, capacity, website, notes, latitude, longitude, rating]);
+        const result = await connection.query(query, venueValues(venue));
 
         // Check if the insert was successful
         if (result.affectedRows === 1) {
@@ -139,28 +165,13 @@ export const update_ConcertVenue_ById = async (req: Request, res: Response) => {
         }
 
         // Update the concert venue
-        const { name,
-            address = null,
-            city = null,
-            state = null,
-            country = null,
-            postal_code = null,
-            type = null,
-            indoor_outdoor = null,
-            capacity = null,
-            website = null,
-            notes = null,
-            latitude = null,
-            longitude = null,
-            rating = null
-        } = venueData;
+    const venue = normalizeVenueData(venueData);
 
         const query = `UPDATE ${table_name_ConcertVenues} SET name = ?, address = ?, city = ?, state = ?, country = ?, 
             postal_code = ?, type = ?, indoor_outdoor = ?, capacity = ?, website = ?, notes = ?, 
             latitude = ?, longitude = ?, rating = ? WHERE id = ?`;
 
-        const result = await connection.query(query, [name, address, city, state, country, postal_code,
-        type, indoor_outdoor, capacity, website, notes, latitude, longitude, rating, id]);
+        const result = await connection.query(query, [...venueValues(venue), id]);
 
         if (result.affectedRows === 1) {
             res.status(200).json({ message: 'Concert-Venue updated successfully' });
@@ -179,7 +190,7 @@ export const delete_ConcertVenue_ById = async (req: Request, res: Response) => {
     const { id } = req.params;
     let connection;
 
-    if (isNaN(Number(id))) {
+    if (isInvalidId(id)) {
         res.status(400).send({ message: 'Invalid ID format' });
         return;
     }

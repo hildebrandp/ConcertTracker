@@ -8,76 +8,24 @@
     <table class="table">
       <thead>
         <tr>
-          <th style="width: 160px" :aria-sort="sortable ? ariaSort('date') : undefined">
+          <th
+            v-for="col in columns"
+            :key="col.label"
+            :style="col.width ? { width: col.width } : undefined"
+            :aria-sort="col.key && sortable ? ariaSort(col.key) : undefined"
+          >
             <button
-              v-if="sortable"
+              v-if="col.key && sortable"
               class="sort-button"
               type="button"
-              @click="requestSort('date')"
+              @click="requestSort(col.key)"
             >
-              Date
+              {{ col.label }}
               <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("date") }}
+                {{ sortIndicator(col.key) }}
               </span>
             </button>
-            <span v-else>Date</span>
-          </th>
-          <th :aria-sort="sortable ? ariaSort('name') : undefined">
-            <button
-              v-if="sortable"
-              class="sort-button"
-              type="button"
-              @click="requestSort('name')"
-            >
-              Concert
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("name") }}
-              </span>
-            </button>
-            <span v-else>Concert</span>
-          </th>
-          <th style="width: 200px" :aria-sort="sortable ? ariaSort('venue') : undefined">
-            <button
-              v-if="sortable"
-              class="sort-button"
-              type="button"
-              @click="requestSort('venue')"
-            >
-              Venue
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("venue") }}
-              </span>
-            </button>
-            <span v-else>Venue</span>
-          </th>
-          <th style="width: 90px" :aria-sort="sortable ? ariaSort('bands') : undefined">
-            <button
-              v-if="sortable"
-              class="sort-button"
-              type="button"
-              @click="requestSort('bands')"
-            >
-              Bands
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("bands") }}
-              </span>
-            </button>
-            <span v-else>Bands</span>
-          </th>
-          <th style="width: 140px">Participants</th>
-          <th style="width: 120px" :aria-sort="sortable ? ariaSort('rating') : undefined">
-            <button
-              v-if="sortable"
-              class="sort-button"
-              type="button"
-              @click="requestSort('rating')"
-            >
-              Rating
-              <span class="sort-indicator" aria-hidden="true">
-                {{ sortIndicator("rating") }}
-              </span>
-            </button>
-            <span v-else>Rating</span>
+            <span v-else>{{ col.label }}</span>
           </th>
         </tr>
       </thead>
@@ -112,13 +60,15 @@
 import { toRefs } from "vue";
 import type { ConcertListItemDto } from "../api/types";
 
+type SortKey = "date" | "name" | "venue" | "bands" | "rating";
+
 const props = withDefaults(
   defineProps<{
     concerts: ConcertListItemDto[];
     title?: string;
     hint?: string;
     sortable?: boolean;
-    sortKey?: "date" | "name" | "venue" | "bands" | "rating";
+    sortKey?: SortKey;
     sortDir?: "asc" | "desc";
   }>(),
   {
@@ -131,22 +81,35 @@ const props = withDefaults(
 );
 const { concerts, title, hint, sortable, sortKey, sortDir } = toRefs(props);
 
+const columns: Array<{
+  label: string;
+  key?: SortKey;
+  width?: string;
+}> = [
+  { label: "Date", key: "date", width: "160px" },
+  { label: "Concert", key: "name" },
+  { label: "Venue", key: "venue", width: "200px" },
+  { label: "Bands", key: "bands", width: "90px" },
+  { label: "Participants", width: "140px" },
+  { label: "Rating", key: "rating", width: "120px" },
+];
+
 const emit = defineEmits<{
   (e: "select", concertId: number): void;
-  (e: "sort-change", key: "date" | "name" | "venue" | "bands" | "rating"): void;
+  (e: "sort-change", key: SortKey): void;
 }>();
 
-function requestSort(key: "date" | "name" | "venue" | "bands" | "rating") {
+function requestSort(key: SortKey) {
   if (!sortable.value) return;
   emit("sort-change", key);
 }
 
-function sortIndicator(key: "date" | "name" | "venue" | "bands" | "rating") {
+function sortIndicator(key: SortKey) {
   if (sortKey.value !== key) return "";
   return sortDir.value === "asc" ? "^" : "v";
 }
 
-function ariaSort(key: "date" | "name" | "venue" | "bands" | "rating") {
+function ariaSort(key: SortKey) {
   if (sortKey.value !== key) return "none";
   return sortDir.value === "asc" ? "ascending" : "descending";
 }

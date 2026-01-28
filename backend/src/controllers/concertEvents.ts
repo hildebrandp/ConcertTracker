@@ -15,6 +15,184 @@ const schema_ConcertEventBundle_FilePath = path.resolve(__dirname, "../types/sch
 
 const validator = new JSONSchemaValidator();
 
+type EventBundle = {
+    event: { name: string; datetime: string; rating?: number | null; notes?: string | null };
+    venueId?: number;
+    venue?: any;
+    bands: Array<any>;
+};
+
+type BandEntry = {
+    bandId?: number;
+    band?: {
+        name: string;
+        genre?: string;
+        origin_country?: string;
+        rating?: number | null;
+        notes?: string | null;
+        link?: string | null;
+        website?: string | null;
+    };
+    runningOrder?: number;
+    running_order?: number;
+    mainAct?: boolean;
+    main_act?: boolean;
+    setlist?: string | null;
+    rating?: number | null;
+    notes?: string | null;
+};
+
+const insertConcertVenue = async (connection: any, venue: any) => {
+    const venueQuery = `INSERT INTO ConcertVenues (name, address, city, state, country, postal_code, type, 
+        indoor_outdoor, capacity, website, notes, latitude, longitude, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const venueValues = [
+        venue.name,
+        venue.address ?? null,
+        venue.city ?? null,
+        venue.state ?? null,
+        venue.country ?? null,
+        venue.postal_code ?? null,
+        venue.type ?? null,
+        venue.indoor_outdoor ?? null,
+        venue.capacity ?? null,
+        venue.website ?? null,
+        venue.notes ?? null,
+        venue.latitude ?? null,
+        venue.longitude ?? null,
+        venue.rating ?? null,
+    ];
+
+    const venueResult = await connection.query(venueQuery, venueValues);
+    return Number(venueResult.insertId);
+};
+
+const insertConcertBand = async (connection: any, band: any) => {
+    const bandQuery = `INSERT INTO ${table_name_ConcertBands} (name, genre, origin_country, rating, notes, link, website) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const bandValues = [
+        band.name,
+        band.genre ?? null,
+        band.origin_country ?? null,
+        band.rating ?? null,
+        band.notes ?? null,
+        band.link ?? null,
+        band.website ?? null,
+    ];
+
+    const bandResult = await connection.query(bandQuery, bandValues);
+    return Number(bandResult.insertId);
+};
+
+const resolveVenueIdForCreate = async (
+    connection: any,
+    venueId?: number,
+    venue?: any
+) => {
+    if (venueId) {
+        return venueId;
+    }
+
+    if (!venue || !venue.name) {
+        throw new Error('Missing venue data.');
+    }
+
+    return insertConcertVenue(connection, venue);
+};
+
+const resolveVenueIdForUpdate = async (
+    connection: any,
+    venueId: number | undefined,
+    venue: any | undefined,
+    existingVenueId: number
+) => {
+    if (!venue) {
+        return venueId ?? existingVenueId;
+    }
+
+    if (venueId) {
+        const venueUpdateQuery = `UPDATE ${table_name_ConcertVenues} SET name = ?, address = ?, city = ?, state = ?, country = ?,
+            postal_code = ?, type = ?, indoor_outdoor = ?, capacity = ?, website = ?, notes = ?, latitude = ?, longitude = ?, rating = ?
+            WHERE id = ?`;
+
+        const venueUpdateValues = [
+            venue.name,
+            venue.address ?? null,
+            venue.city ?? null,
+            venue.state ?? null,
+            venue.country ?? null,
+            venue.postal_code ?? null,
+            venue.type ?? null,
+            venue.indoor_outdoor ?? null,
+            venue.capacity ?? null,
+            venue.website ?? null,
+            venue.notes ?? null,
+            venue.latitude ?? null,
+            venue.longitude ?? null,
+            venue.rating ?? null,
+            venueId,
+        ];
+
+        await connection.query(venueUpdateQuery, venueUpdateValues);
+        return venueId;
+    }
+
+    return insertConcertVenue(connection, venue);
+};
+
+const insertEventBands = async (
+    connection: any,
+    eventId: number,
+    bands: BandEntry[],
+    existingSetlistByBand?: Map<string, any>
+) => {
+    const bandIds: number[] = [];
+    const eventBandIds: number[] = [];
+
+    for (let index = 0; index < bands.length; index += 1) {
+        const entry = bands[index] ?? {};
+        let bandId = entry.bandId;
+
+        if (!bandId) {
+            const band = entry.band;
+            if (!band || !band.name) {
+                throw new Error('Missing band data.');
+            }
+            bandId = await insertConcertBand(connection, band);
+        }
+
+        if (!bandId) {
+            throw new Error('Failed to create Concert-Band.');
+        }
+
+        bandIds.push(bandId);
+
+        const eventBandQuery = `INSERT INTO ${table_name_EventBands} (event_id, band_id, setlist, rating, mainAct, runningOrder, notes) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+        const runningOrder = entry.runningOrder ?? entry.running_order ?? index + 1;
+        const mainAct = entry.mainAct ?? entry.main_act ?? false;
+
+        const setlistKey = `${bandId}:${runningOrder ?? ""}`;
+        const preservedSetlist = existingSetlistByBand?.get(setlistKey) ?? null;
+
+        const eventBandValues = [
+            eventId,
+            bandId,
+            entry.setlist ?? preservedSetlist,
+            entry.rating ?? null,
+            mainAct,
+            runningOrder,
+            entry.notes ?? null,
+        ];
+
+        const eventBandResult = await connection.query(eventBandQuery, eventBandValues);
+        eventBandIds.push(Number(eventBandResult.insertId));
+    }
+
+    return { bandIds, eventBandIds };
+};
+
 export const get_ConcertOverview = async (req: Request, res: Response) => {
     console.debug('Call: get_ConcertOverview');
     let connection;
@@ -74,6 +252,7 @@ export const get_ConcertEvent_ById = async (req: Request, res: Response) => {
 
         if (rows.length === 0) {
             res.status(404).send({ message: 'Concert-Event not found' });
+            return;
         }
 
         res.json(rows[0]); // Send the first result
@@ -224,12 +403,7 @@ export const create_ConcertEvent_WithBands = async (req: Request, res: Response)
         return;
     }
 
-    const { event, venueId, venue, bands } = bundleData as {
-        event: { name: string; datetime: string; rating?: number | null; notes?: string | null };
-        venueId?: number;
-        venue?: any;
-        bands: Array<any>;
-    };
+    const { event, venueId, venue, bands } = bundleData as EventBundle;
 
     let connection;
 
@@ -237,35 +411,7 @@ export const create_ConcertEvent_WithBands = async (req: Request, res: Response)
         connection = await getConnection();
         await connection.beginTransaction();
 
-        let resolvedVenueId = venueId;
-        if (!resolvedVenueId) {
-            if (!venue || !venue.name) {
-                throw new Error('Missing venue data.');
-            }
-
-            const venueQuery = `INSERT INTO ConcertVenues (name, address, city, state, country, postal_code, type, 
-                indoor_outdoor, capacity, website, notes, latitude, longitude, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-            const venueValues = [
-                venue.name,
-                venue.address ?? null,
-                venue.city ?? null,
-                venue.state ?? null,
-                venue.country ?? null,
-                venue.postal_code ?? null,
-                venue.type ?? null,
-                venue.indoor_outdoor ?? null,
-                venue.capacity ?? null,
-                venue.website ?? null,
-                venue.notes ?? null,
-                venue.latitude ?? null,
-                venue.longitude ?? null,
-                venue.rating ?? null,
-            ];
-
-            const venueResult = await connection.query(venueQuery, venueValues);
-            resolvedVenueId = Number(venueResult.insertId);
-        }
+        const resolvedVenueId = await resolveVenueIdForCreate(connection, venueId, venue);
 
         if (!resolvedVenueId) {
             throw new Error('Missing venue selection.');
@@ -286,60 +432,11 @@ export const create_ConcertEvent_WithBands = async (req: Request, res: Response)
             throw new Error('Failed to create Concert-Event.');
         }
 
-        const bandIds: number[] = [];
-        const eventBandIds: number[] = [];
-
-        for (let index = 0; index < bands.length; index += 1) {
-            const entry = bands[index] ?? {};
-            let bandId = entry.bandId;
-
-            if (!bandId) {
-                const band = entry.band;
-                if (!band || !band.name) {
-                    throw new Error('Missing band data.');
-                }
-
-                const bandQuery = `INSERT INTO ${table_name_ConcertBands} (name, genre, origin_country, rating, notes, link, website) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)`;
-                const bandValues = [
-                    band.name,
-                    band.genre ?? null,
-                    band.origin_country ?? null,
-                    band.rating ?? null,
-                    band.notes ?? null,
-                    band.link ?? null,
-                    band.website ?? null,
-                ];
-
-                const bandResult = await connection.query(bandQuery, bandValues);
-                bandId = Number(bandResult.insertId);
-            }
-
-            if (!bandId) {
-                throw new Error('Failed to create Concert-Band.');
-            }
-
-            bandIds.push(bandId);
-
-            const eventBandQuery = `INSERT INTO ${table_name_EventBands} (event_id, band_id, setlist, rating, mainAct, runningOrder, notes) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-            const runningOrder = entry.runningOrder ?? entry.running_order ?? index + 1;
-            const mainAct = entry.mainAct ?? entry.main_act ?? false;
-
-            const eventBandValues = [
-                eventId,
-                bandId,
-                entry.setlist ?? null,
-                entry.rating ?? null,
-                mainAct,
-                runningOrder,
-                entry.notes ?? null,
-            ];
-
-            const eventBandResult = await connection.query(eventBandQuery, eventBandValues);
-            eventBandIds.push(Number(eventBandResult.insertId));
-        }
+        const { bandIds, eventBandIds } = await insertEventBands(
+            connection,
+            eventId,
+            bands as BandEntry[]
+        );
 
         await connection.commit();
 
@@ -438,12 +535,7 @@ export const update_ConcertEvent_WithBands = async (req: Request, res: Response)
         return;
     }
 
-    const { event, venueId, venue, bands } = bundleData as {
-        event: { name: string; datetime: string; rating?: number | null; notes?: string | null };
-        venueId?: number;
-        venue?: any;
-        bands: Array<any>;
-    };
+    const { event, venueId, venue, bands } = bundleData as EventBundle;
 
     let connection;
 
@@ -462,59 +554,12 @@ export const update_ConcertEvent_WithBands = async (req: Request, res: Response)
             return;
         }
 
-        let resolvedVenueId = venueId ?? existingEvent.venue_id;
-
-        if (venue) {
-            if (venueId) {
-                const venueUpdateQuery = `UPDATE ${table_name_ConcertVenues} SET name = ?, address = ?, city = ?, state = ?, country = ?,
-                    postal_code = ?, type = ?, indoor_outdoor = ?, capacity = ?, website = ?, notes = ?, latitude = ?, longitude = ?, rating = ?
-                    WHERE id = ?`;
-
-                const venueUpdateValues = [
-                    venue.name,
-                    venue.address ?? null,
-                    venue.city ?? null,
-                    venue.state ?? null,
-                    venue.country ?? null,
-                    venue.postal_code ?? null,
-                    venue.type ?? null,
-                    venue.indoor_outdoor ?? null,
-                    venue.capacity ?? null,
-                    venue.website ?? null,
-                    venue.notes ?? null,
-                    venue.latitude ?? null,
-                    venue.longitude ?? null,
-                    venue.rating ?? null,
-                    venueId,
-                ];
-
-                await connection.query(venueUpdateQuery, venueUpdateValues);
-                resolvedVenueId = venueId;
-            } else {
-                const venueQuery = `INSERT INTO ${table_name_ConcertVenues} (name, address, city, state, country, postal_code, type,
-                    indoor_outdoor, capacity, website, notes, latitude, longitude, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-                const venueValues = [
-                    venue.name,
-                    venue.address ?? null,
-                    venue.city ?? null,
-                    venue.state ?? null,
-                    venue.country ?? null,
-                    venue.postal_code ?? null,
-                    venue.type ?? null,
-                    venue.indoor_outdoor ?? null,
-                    venue.capacity ?? null,
-                    venue.website ?? null,
-                    venue.notes ?? null,
-                    venue.latitude ?? null,
-                    venue.longitude ?? null,
-                    venue.rating ?? null,
-                ];
-
-                const venueResult = await connection.query(venueQuery, venueValues);
-                resolvedVenueId = Number(venueResult.insertId);
-            }
-        }
+        const resolvedVenueId = await resolveVenueIdForUpdate(
+            connection,
+            venueId,
+            venue,
+            existingEvent.venue_id
+        );
 
         if (!resolvedVenueId) {
             throw new Error('Missing venue selection.');
@@ -543,61 +588,12 @@ export const update_ConcertEvent_WithBands = async (req: Request, res: Response)
 
         await connection.query(`DELETE FROM ${table_name_EventBands} WHERE event_id = ?`, [id]);
 
-        const bandIds: number[] = [];
-        const eventBandIds: number[] = [];
-
-        for (let index = 0; index < bands.length; index += 1) {
-            const entry = bands[index] ?? {};
-            let bandId = entry.bandId;
-
-            if (!bandId) {
-                const band = entry.band;
-                if (!band || !band.name) {
-                    throw new Error('Missing band data.');
-                }
-
-                const bandQuery = `INSERT INTO ${table_name_ConcertBands} (name, genre, origin_country, rating, notes, link, website)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)`;
-                const bandValues = [
-                    band.name,
-                    band.genre ?? null,
-                    band.origin_country ?? null,
-                    band.rating ?? null,
-                    band.notes ?? null,
-                    band.link ?? null,
-                    band.website ?? null,
-                ];
-                const bandResult = await connection.query(bandQuery, bandValues);
-                bandId = Number(bandResult.insertId);
-            }
-
-            if (!bandId) {
-                throw new Error('Failed to create Concert-Band.');
-            }
-
-            bandIds.push(bandId);
-
-            const eventBandQuery = `INSERT INTO ${table_name_EventBands} (event_id, band_id, setlist, rating, mainAct, runningOrder, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-            const runningOrder = entry.runningOrder ?? entry.running_order ?? index + 1;
-            const mainAct = entry.mainAct ?? entry.main_act ?? false;
-
-            const setlistKey = `${bandId}:${runningOrder ?? ""}`;
-            const preservedSetlist = existingSetlistByBand.get(setlistKey) ?? null;
-            const eventBandValues = [
-                id,
-                bandId,
-                entry.setlist ?? preservedSetlist,
-                entry.rating ?? null,
-                mainAct,
-                runningOrder,
-                entry.notes ?? null,
-            ];
-
-            const eventBandResult = await connection.query(eventBandQuery, eventBandValues);
-            eventBandIds.push(Number(eventBandResult.insertId));
-        }
+        const { bandIds, eventBandIds } = await insertEventBands(
+            connection,
+            Number(id),
+            bands as BandEntry[],
+            existingSetlistByBand
+        );
 
         await connection.commit();
 
