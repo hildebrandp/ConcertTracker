@@ -47,6 +47,10 @@ body.modal-open {
   overflow: hidden;
 }
 
+body.modal-open .sticky-filter {
+  display: none;
+}
+
 body.dark .table-card,
 body.dark .modal,
 body.dark .stat-card,

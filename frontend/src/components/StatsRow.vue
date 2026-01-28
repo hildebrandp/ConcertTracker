@@ -40,20 +40,15 @@
       </div>
     </button>
 
-    <div class="stat-card">
-      <div class="stat-label">Ticket prices</div>
-      <div class="stat-split">
-        <div class="stat-split-col">
-          <span class="stat-split-label">Total</span>
-          <span class="stat-split-value">{{ formatCurrency(ticketTotal) }}</span>
-        </div>
-        <div class="stat-split-divider" aria-hidden="true"></div>
-        <div class="stat-split-col">
-          <span class="stat-split-label">This year</span>
-          <span class="stat-split-value">{{ formatCurrency(ticketThisYear) }}</span>
-        </div>
-      </div>
-    </div>
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'bands' }"
+      @click="$emit('show-all-bands')"
+    >
+      <div class="stat-label">Bands seen</div>
+      <div class="stat-value">{{ bandsTotal ?? stats?.bandsSeen ?? "-" }}</div>
+    </button>
 
     <button
       type="button"
@@ -68,22 +63,32 @@
     <button
       type="button"
       class="stat-card clickable"
-      :class="{ 'is-active': activeView === 'bands' }"
-      @click="$emit('show-all-bands')"
-    >
-      <div class="stat-label">Bands seen</div>
-      <div class="stat-value">{{ bandsTotal ?? stats?.bandsSeen ?? "-" }}</div>
-    </button>
-
-    <button
-      type="button"
-      class="stat-card clickable"
       :class="{ 'is-active': activeView === 'participants' }"
       @click="$emit('show-all-participants')"
     >
       <div class="stat-label">Concert friends</div>
       <div class="stat-value">{{ stats?.participantsCount ?? "-" }}</div>
     </button>
+
+    <div class="stat-card">
+      <div class="stat-label">Planned Events</div>
+      <div class="stat-value">{{ plannedEvents ?? "-" }}</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Ticket prices</div>
+      <div class="stat-split">
+        <div class="stat-split-col">
+          <span class="stat-split-label">Total</span>
+          <span class="stat-split-value">{{ formatCurrency(ticketTotal) }}</span>
+        </div>
+        <div class="stat-split-divider" aria-hidden="true"></div>
+        <div class="stat-split-col">
+          <span class="stat-split-label">This year</span>
+          <span class="stat-split-value">{{ formatCurrency(ticketThisYear) }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -96,6 +101,7 @@ defineProps<{
   bandsTotal?: number | null;
   actsTotal?: number | null;
   venuesTotal?: number | null;
+  plannedEvents?: number | null;
   concertsThisYear?: number | null;
   actsThisYear?: number | null;
   ticketTotal?: number | null;

@@ -15,12 +15,12 @@ Fixes:
 - mobile version stop scroling in background
 
 TODO:
+- Desktop tables next to each other?
 - Login
     - Only one user, password in .env
     - Session cookies
 - Settings window
     - Export Database content
-    - Delete all Data button
     - DB size info
     - Show software version
     - Show that there is a update

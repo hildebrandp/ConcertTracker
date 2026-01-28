@@ -685,13 +685,6 @@ function validateForm() {
     return "Please select an existing venue or create a new one.";
   }
 
-  const validBands = bandEntries.value.filter((entry) => {
-    if (entry.mode === "existing") {
-      return !!entry.selectedBandId;
-    }
-    return !!entry.newBand.name.trim();
-  });
-
   return null;
 }
 

@@ -42,6 +42,7 @@
       :bands-total="pastBandsTotal"
       :acts-total="pastActsTotal"
       :venues-total="pastVenuesTotal"
+      :planned-events="plannedEventsTotal"
       :concerts-this-year="concertsThisYear"
       :acts-this-year="actsThisYear"
       :ticket-total="ticketTotals.total"
@@ -56,17 +57,18 @@
 
     <div
       v-if="!allConcertsOpen && !allBandsOpen && !allActsOpen && !allVenuesOpen && !allParticipantsOpen"
-      class="dashboard-section"
+      class="dashboard-tables"
     >
-      <div class="sticky-filter">
-        <label class="filter-toggle">
-          <input v-model="showUpcomingOnly" type="checkbox" />
-          <span>Show upcoming only</span>
-        </label>
-      </div>
       <ConcertsTable
-        :concerts="dashboardConcerts"
-        title="Last 10 Concerts"
+        :concerts="pastConcerts.slice(0, 10)"
+        title="Last 10 Past Concerts"
+        :sortable="false"
+        @select="openDetails"
+      />
+
+      <ConcertsTable
+        :concerts="upcomingConcerts.slice(0, 10)"
+        title="Upcoming Concerts"
         :sortable="false"
         @select="openDetails"
       />
@@ -87,7 +89,7 @@
       :search="concertsSearch"
       :participant-name="concertsParticipantName"
       @close="closeAllConcerts"
-      @update:pageSize="pageSize = $event"
+      @update:pageSize="pageSize = $event as (typeof pageSizeOptions)[number]"
       @update:search="concertsSearch = $event"
       @prev-page="prevPage"
       @next-page="nextPage"
@@ -110,7 +112,7 @@
       :sort-dir="bandsSortDir"
       :search="bandsSearch"
       @close="closeAllBands"
-      @update:pageSize="bandPageSize = $event"
+      @update:pageSize="bandPageSize = $event as (typeof bandPageSizeOptions)[number]"
       @update:search="bandsSearch = $event"
       @prev-page="prevBandPage"
       @next-page="nextBandPage"
@@ -132,7 +134,7 @@
       :sort-dir="actsSortDir"
       :search="actsSearch"
       @close="closeAllActs"
-      @update:pageSize="actsPageSize = $event"
+      @update:pageSize="actsPageSize = $event as (typeof actsPageSizeOptions)[number]"
       @update:search="actsSearch = $event"
       @prev-page="prevActsPage"
       @next-page="nextActsPage"
@@ -154,7 +156,7 @@
       :sort-dir="venuesSortDir"
       :search="venuesSearch"
       @close="closeAllVenues"
-      @update:pageSize="venuesPageSize = $event"
+      @update:pageSize="venuesPageSize = $event as (typeof venuesPageSizeOptions)[number]"
       @update:search="venuesSearch = $event"
       @prev-page="prevVenuesPage"
       @next-page="nextVenuesPage"
@@ -352,7 +354,6 @@ const updateEventId = ref<number | null>(null);
 const reopenEventId = ref<number | null>(null);
 const darkMode = ref(false);
 const settingsOpen = ref(false);
-const showUpcomingOnly = ref(false);
 const frontendVersion = import.meta.env.VITE_FRONTEND_VERSION ?? "dev";
 const backendVersion = import.meta.env.VITE_BACKEND_VERSION ?? "dev";
 const anyModalOpen = computed(
@@ -393,14 +394,23 @@ const pastConcerts = computed(() => {
   return source.filter((concert) => isPastOrToday(concert.date));
 });
 
-const dashboardConcerts = computed(() => {
-  if (!showUpcomingOnly.value) return concerts.value;
-  return concerts.value.filter((concert) => !isPastOrToday(concert.date));
+const upcomingConcerts = computed(() => {
+  const source = allConcerts.value.length > 0 ? allConcerts.value : concerts.value;
+  return source
+    .filter((concert) => !isPastOrToday(concert.date))
+    .sort((a, b) => a.date.localeCompare(b.date));
 });
+
 
 const pastConcertsTotal = computed(() => {
   if (!stats.value) return null;
   return pastConcerts.value.length;
+});
+
+const plannedEventsTotal = computed(() => {
+  if (!stats.value) return null;
+  const source = allConcerts.value.length > 0 ? allConcerts.value : concerts.value;
+  return source.filter((concert) => !isPastOrToday(concert.date)).length;
 });
 
 const concertsThisYear = computed(() => {
@@ -627,6 +637,7 @@ function closeAllViews() {
   allVenuesOpen.value = false;
   allParticipantsOpen.value = false;
 }
+
 
 function toggleSettings() {
   settingsOpen.value = !settingsOpen.value;
@@ -1700,41 +1711,13 @@ async function handleEventUpdated() {
   accent-color: #111;
 }
 
-.dashboard-section {
+.dashboard-tables {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: var(--bg);
+  gap: 12px;
 }
 
-.sticky-filter {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 6px 10px;
-  color: var(--text);
-}
-
-.filter-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.filter-toggle input {
-  accent-color: #111;
-}
-
-@media (max-width: 720px) {
-  .filter-toggle {
-    font-size: 12px;
-  }
-}
+/* removed dashboard upcoming filter */
 
 .settings-backdrop {
   position: fixed;
@@ -1822,10 +1805,6 @@ async function handleEventUpdated() {
     justify-content: space-between;
   }
 
-  .sticky-filter {
-    position: static;
-  }
-
   .settings-panel {
     width: 100%;
   }
@@ -1835,9 +1814,3 @@ async function handleEventUpdated() {
   }
 }
 </style>
-
-
-.dashboard-section,
-.sticky-filter {
-  color: var(--text);
-}
