@@ -38,6 +38,10 @@
 
     <StatsRow
       :stats="stats"
+      :concerts-total="pastConcertsTotal"
+      :bands-total="pastBandsTotal"
+      :acts-total="pastActsTotal"
+      :venues-total="pastVenuesTotal"
       :concerts-this-year="concertsThisYear"
       :acts-this-year="actsThisYear"
       :ticket-total="ticketTotals.total"
@@ -50,13 +54,23 @@
       @show-all-participants="openAllParticipants"
     />
 
-    <ConcertsTable
+    <div
       v-if="!allConcertsOpen && !allBandsOpen && !allActsOpen && !allVenuesOpen && !allParticipantsOpen"
-      :concerts="concerts"
-      title="Last 10 Concerts"
-      :sortable="false"
-      @select="openDetails"
-    />
+      class="dashboard-section"
+    >
+      <div class="sticky-filter">
+        <label class="filter-toggle">
+          <input v-model="showUpcomingOnly" type="checkbox" />
+          <span>Show upcoming only</span>
+        </label>
+      </div>
+      <ConcertsTable
+        :concerts="dashboardConcerts"
+        title="Last 10 Concerts"
+        :sortable="false"
+        @select="openDetails"
+      />
+    </div>
 
     <AllConcertsView
       v-else-if="allConcertsOpen"
@@ -338,6 +352,7 @@ const updateEventId = ref<number | null>(null);
 const reopenEventId = ref<number | null>(null);
 const darkMode = ref(false);
 const settingsOpen = ref(false);
+const showUpcomingOnly = ref(false);
 const frontendVersion = import.meta.env.VITE_FRONTEND_VERSION ?? "dev";
 const backendVersion = import.meta.env.VITE_BACKEND_VERSION ?? "dev";
 const anyModalOpen = computed(
@@ -359,31 +374,81 @@ const activeStatsView = computed<
   return null;
 });
 
-const concertsThisYear = computed(() => {
-  const year = new Date().getFullYear();
+const todayKey = computed(() => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+});
+
+const isPastOrToday = (dateValue?: string | null) => {
+  if (!dateValue) return false;
+  const key = dateValue.slice(0, 10);
+  return key <= todayKey.value;
+};
+
+const pastConcerts = computed(() => {
   const source = allConcerts.value.length > 0 ? allConcerts.value : concerts.value;
-  return source.filter((concert) => concert.date?.startsWith(`${year}-`)).length;
+  return source.filter((concert) => isPastOrToday(concert.date));
+});
+
+const dashboardConcerts = computed(() => {
+  if (!showUpcomingOnly.value) return concerts.value;
+  return concerts.value.filter((concert) => !isPastOrToday(concert.date));
+});
+
+const pastConcertsTotal = computed(() => {
+  if (!stats.value) return null;
+  return pastConcerts.value.length;
+});
+
+const concertsThisYear = computed(() => {
+  if (!stats.value) return null;
+  const year = `${new Date().getFullYear()}-`;
+  return pastConcerts.value.filter((concert) => concert.date?.startsWith(year)).length;
+});
+
+const pastActsTotal = computed(() => {
+  if (!stats.value) return null;
+  if (allActs.value.length === 0) return 0;
+  return allActs.value.filter((act) => isPastOrToday(act.date)).length;
 });
 
 const actsThisYear = computed(() => {
   if (!stats.value) return null;
   if (allActs.value.length === 0) return 0;
-  const year = new Date().getFullYear();
-  return allActs.value.filter((act) => act.date?.startsWith(`${year}-`)).length;
+  const year = `${new Date().getFullYear()}-`;
+  return allActs.value.filter(
+    (act) => isPastOrToday(act.date) && act.date?.startsWith(year)
+  ).length;
+});
+
+const pastBandsTotal = computed(() => {
+  if (!stats.value) return null;
+  if (allBands.value.length === 0) return 0;
+  return allBands.value.filter((band) => isPastOrToday(band.last_seen_date)).length;
+});
+
+const pastVenuesTotal = computed(() => {
+  if (!stats.value) return null;
+  if (allVenues.value.length === 0) return 0;
+  return allVenues.value.filter((venue) =>
+    isPastOrToday(venue.last_visited_date ?? "")
+  ).length;
 });
 
 const ticketTotals = computed(() => {
   if (!stats.value) {
     return { total: null as number | null, thisYear: null as number | null };
   }
-  const source = allConcerts.value.length > 0 ? allConcerts.value : concerts.value;
-  if (source.length === 0) {
+  if (pastConcerts.value.length === 0) {
     return { total: 0, thisYear: 0 };
   }
   const yearPrefix = `${new Date().getFullYear()}-`;
   let total = 0;
   let thisYear = 0;
-  for (const concert of source) {
+  for (const concert of pastConcerts.value) {
     const price = Number(concert.ticketPrice ?? 0);
     if (Number.isFinite(price)) {
       total += price;
@@ -1131,11 +1196,17 @@ async function refreshData() {
   };
   concerts.value = concertsResponse;
 
+  if (allConcerts.value.length === 0) {
+    await loadAllConcerts();
+  }
   if (allBands.value.length === 0) {
     await loadAllBands();
   }
   if (allActs.value.length === 0) {
     await loadAllActs();
+  }
+  if (allVenues.value.length === 0) {
+    await loadAllVenues();
   }
   if (allConcertsOpen.value || allConcerts.value.length > 0) {
     await loadAllConcerts();
@@ -1629,6 +1700,42 @@ async function handleEventUpdated() {
   accent-color: #111;
 }
 
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg);
+}
+
+.sticky-filter {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  color: var(--text);
+}
+
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.filter-toggle input {
+  accent-color: #111;
+}
+
+@media (max-width: 720px) {
+  .filter-toggle {
+    font-size: 12px;
+  }
+}
+
 .settings-backdrop {
   position: fixed;
   inset: 0;
@@ -1715,6 +1822,10 @@ async function handleEventUpdated() {
     justify-content: space-between;
   }
 
+  .sticky-filter {
+    position: static;
+  }
+
   .settings-panel {
     width: 100%;
   }
@@ -1726,3 +1837,7 @@ async function handleEventUpdated() {
 </style>
 
 
+.dashboard-section,
+.sticky-filter {
+  color: var(--text);
+}

@@ -15,11 +15,22 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#app {
+  background: var(--bg);
+}
+
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--bg);
 }
 
 body.dark {

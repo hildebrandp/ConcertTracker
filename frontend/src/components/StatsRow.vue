@@ -10,7 +10,7 @@
       <div class="stat-split">
         <div class="stat-split-col">
           <span class="stat-split-label">Total</span>
-          <span class="stat-split-value">{{ stats?.concertsAttended ?? "-" }}</span>
+          <span class="stat-split-value">{{ concertsTotal ?? stats?.concertsAttended ?? "-" }}</span>
         </div>
         <div class="stat-split-divider" aria-hidden="true"></div>
         <div class="stat-split-col">
@@ -30,7 +30,7 @@
       <div class="stat-split">
         <div class="stat-split-col">
           <span class="stat-split-label">Total</span>
-          <span class="stat-split-value">{{ stats?.actsSeen ?? "-" }}</span>
+          <span class="stat-split-value">{{ actsTotal ?? stats?.actsSeen ?? "-" }}</span>
         </div>
         <div class="stat-split-divider" aria-hidden="true"></div>
         <div class="stat-split-col">
@@ -62,7 +62,7 @@
       @click="$emit('show-all-venues')"
     >
       <div class="stat-label">Total Venues visited</div>
-      <div class="stat-value">{{ stats?.venuesSeen ?? "-" }}</div>
+      <div class="stat-value">{{ venuesTotal ?? stats?.venuesSeen ?? "-" }}</div>
     </button>
 
     <button
@@ -72,7 +72,7 @@
       @click="$emit('show-all-bands')"
     >
       <div class="stat-label">Bands seen</div>
-      <div class="stat-value">{{ stats?.bandsSeen ?? "-" }}</div>
+      <div class="stat-value">{{ bandsTotal ?? stats?.bandsSeen ?? "-" }}</div>
     </button>
 
     <button
@@ -92,6 +92,10 @@ import type { StatsDto } from "../api/types";
 
 defineProps<{
   stats: StatsDto | null;
+  concertsTotal?: number | null;
+  bandsTotal?: number | null;
+  actsTotal?: number | null;
+  venuesTotal?: number | null;
   concertsThisYear?: number | null;
   actsThisYear?: number | null;
   ticketTotal?: number | null;

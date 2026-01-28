@@ -34,7 +34,7 @@
           <div v-for="(band, index) in bandEntries" :key="band.localId" class="band-entry">
             <div class="band-header">
               <div class="field">
-                <label>Band <span class="required">*</span></label>
+                <label>Band</label>
                 <div v-if="band.mode === 'existing'" class="inline-input">
                   <input
                     v-model.trim="band.query"
@@ -85,12 +85,7 @@
                 <button type="button" class="secondary" @click="toggleBandMode(band)">
                   {{ band.mode === "existing" ? "New band" : "Use existing" }}
                 </button>
-                <button
-                  v-if="bandEntries.length > 1"
-                  type="button"
-                  class="ghost"
-                  @click="removeBand(index)"
-                >
+                <button type="button" class="ghost" @click="removeBand(index)">
                   Remove
                 </button>
               </div>
@@ -696,10 +691,6 @@ function validateForm() {
     }
     return !!entry.newBand.name.trim();
   });
-
-  if (validBands.length === 0) {
-    return "At least one band is required.";
-  }
 
   return null;
 }
