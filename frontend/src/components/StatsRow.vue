@@ -7,17 +7,17 @@
       @click="$emit('show-all-concerts')"
     >
       <div class="stat-label">Concerts attended</div>
-      <div class="stat-value">{{ stats?.concertsAttended ?? "-" }}</div>
-    </button>
-
-    <button
-      type="button"
-      class="stat-card clickable"
-      :class="{ 'is-active': activeView === 'bands' }"
-      @click="$emit('show-all-bands')"
-    >
-      <div class="stat-label">Unique Bands seen</div>
-      <div class="stat-value">{{ stats?.bandsSeen ?? "-" }}</div>
+      <div class="stat-split">
+        <div class="stat-split-col">
+          <span class="stat-split-label">Total</span>
+          <span class="stat-split-value">{{ stats?.concertsAttended ?? "-" }}</span>
+        </div>
+        <div class="stat-split-divider" aria-hidden="true"></div>
+        <div class="stat-split-col">
+          <span class="stat-split-label">This year</span>
+          <span class="stat-split-value">{{ concertsThisYear ?? "-" }}</span>
+        </div>
+      </div>
     </button>
 
     <button
@@ -27,8 +27,33 @@
       @click="$emit('show-all-acts')"
     >
       <div class="stat-label">All live acts</div>
-      <div class="stat-value">{{ stats?.actsSeen ?? "-" }}</div>
+      <div class="stat-split">
+        <div class="stat-split-col">
+          <span class="stat-split-label">Total</span>
+          <span class="stat-split-value">{{ stats?.actsSeen ?? "-" }}</span>
+        </div>
+        <div class="stat-split-divider" aria-hidden="true"></div>
+        <div class="stat-split-col">
+          <span class="stat-split-label">This year</span>
+          <span class="stat-split-value">{{ actsThisYear ?? "-" }}</span>
+        </div>
+      </div>
     </button>
+
+    <div class="stat-card">
+      <div class="stat-label">Ticket prices</div>
+      <div class="stat-split">
+        <div class="stat-split-col">
+          <span class="stat-split-label">Total</span>
+          <span class="stat-split-value">{{ formatCurrency(ticketTotal) }}</span>
+        </div>
+        <div class="stat-split-divider" aria-hidden="true"></div>
+        <div class="stat-split-col">
+          <span class="stat-split-label">This year</span>
+          <span class="stat-split-value">{{ formatCurrency(ticketThisYear) }}</span>
+        </div>
+      </div>
+    </div>
 
     <button
       type="button"
@@ -38,6 +63,16 @@
     >
       <div class="stat-label">Total Venues visited</div>
       <div class="stat-value">{{ stats?.venuesSeen ?? "-" }}</div>
+    </button>
+
+    <button
+      type="button"
+      class="stat-card clickable"
+      :class="{ 'is-active': activeView === 'bands' }"
+      @click="$emit('show-all-bands')"
+    >
+      <div class="stat-label">Bands seen</div>
+      <div class="stat-value">{{ stats?.bandsSeen ?? "-" }}</div>
     </button>
 
     <button
@@ -57,6 +92,10 @@ import type { StatsDto } from "../api/types";
 
 defineProps<{
   stats: StatsDto | null;
+  concertsThisYear?: number | null;
+  actsThisYear?: number | null;
+  ticketTotal?: number | null;
+  ticketThisYear?: number | null;
   activeView?: "concerts" | "bands" | "acts" | "venues" | "participants" | null;
 }>();
 
@@ -67,6 +106,11 @@ defineEmits<{
   (e: "show-all-venues"): void;
   (e: "show-all-participants"): void;
 }>();
+
+function formatCurrency(value: number | null | undefined) {
+  if (value === null || value === undefined) return "-";
+  return `€${value.toFixed(2)}`;
+}
 </script>
 
 <style scoped>
@@ -105,7 +149,7 @@ defineEmits<{
 
 .stat-label {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--muted, rgba(0, 0, 0, 0.65));
   margin-bottom: 6px;
 }
 
@@ -113,6 +157,45 @@ defineEmits<{
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.2px;
+}
+
+.stat-split {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.stat-split-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.stat-split-divider {
+  width: 1px;
+  background: var(--border, rgba(0, 0, 0, 0.12));
+}
+
+.stat-split-label {
+  font-size: 12px;
+  color: var(--muted, rgba(0, 0, 0, 0.6));
+}
+
+.stat-split-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+:global(body.dark) .stat-card {
+  background: #111;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f5f5f5;
+}
+
+:global(body.dark) .stat-card.clickable:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 @media (max-width: 980px) {

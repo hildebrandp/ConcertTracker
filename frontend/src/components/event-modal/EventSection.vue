@@ -24,6 +24,9 @@
           min="0"
           step="0.01"
           class="no-spinner"
+          inputmode="decimal"
+          @input="onTicketInput"
+          @blur="onTicketBlur"
         />
       </div>
       <div class="field">
@@ -137,6 +140,37 @@ function eventStarFill(starIndex: number) {
   const value = eventRatingValue.value;
   const starValue = Math.max(0, Math.min(2, value - (starIndex - 1) * 2));
   return (starValue / 2) * 100;
+}
+
+function normalizeDecimalInput(value: string) {
+  const sanitized = value.replace(",", ".").replace(/[^0-9.]/g, "");
+  const parts = sanitized.split(".");
+  const integerPart = parts[0] ?? "";
+  const decimalPart = parts[1] ?? "";
+  const trimmedDecimal = decimalPart.slice(0, 2);
+  return trimmedDecimal.length > 0 ? `${integerPart}.${trimmedDecimal}` : integerPart;
+}
+
+function formatDecimal(value: string) {
+  const normalized = normalizeDecimalInput(value);
+  if (!normalized) return "";
+  const [integerPart, decimalPart = ""] = normalized.split(".");
+  if (decimalPart.length === 0) {
+    return integerPart;
+  }
+  return `${integerPart}.${decimalPart.padEnd(2, "0").slice(0, 2)}`;
+}
+
+function onTicketInput(event: Event) {
+  const target = event.target as HTMLInputElement | null;
+  if (!target) return;
+  const next = normalizeDecimalInput(target.value);
+  eventTicketPriceModel.value = next;
+}
+
+function onTicketBlur() {
+  const raw = eventTicketPriceModel.value.trim();
+  eventTicketPriceModel.value = formatDecimal(raw);
 }
 </script>
 

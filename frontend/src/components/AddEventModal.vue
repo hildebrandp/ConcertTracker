@@ -647,6 +647,7 @@ function numberOrUndefined(value: unknown) {
   return Number.isFinite(num) ? num : undefined;
 }
 
+
 function setBandRating(entry: BandEntry, value: number) {
   if (value <= 0) {
     entry.eventRating = "";

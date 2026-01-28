@@ -50,6 +50,7 @@ CREATE TABLE `ConcertEvents` (
   `datetime` datetime NOT NULL,
   `venue_id` int(11) NOT NULL,
   `rating` int(11) DEFAULT NULL,
+  `ticketPrice` decimal(10,2) DEFAULT NULL,
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 

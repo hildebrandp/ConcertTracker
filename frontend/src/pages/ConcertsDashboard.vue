@@ -38,6 +38,10 @@
 
     <StatsRow
       :stats="stats"
+      :concerts-this-year="concertsThisYear"
+      :acts-this-year="actsThisYear"
+      :ticket-total="ticketTotals.total"
+      :ticket-this-year="ticketTotals.thisYear"
       :active-view="activeStatsView"
       @show-all-concerts="openAllConcerts"
       @show-all-bands="openAllBands"
@@ -353,6 +357,42 @@ const activeStatsView = computed<
   if (allVenuesOpen.value) return "venues";
   if (allParticipantsOpen.value) return "participants";
   return null;
+});
+
+const concertsThisYear = computed(() => {
+  const year = new Date().getFullYear();
+  const source = allConcerts.value.length > 0 ? allConcerts.value : concerts.value;
+  return source.filter((concert) => concert.date?.startsWith(`${year}-`)).length;
+});
+
+const actsThisYear = computed(() => {
+  if (!stats.value) return null;
+  if (allActs.value.length === 0) return 0;
+  const year = new Date().getFullYear();
+  return allActs.value.filter((act) => act.date?.startsWith(`${year}-`)).length;
+});
+
+const ticketTotals = computed(() => {
+  if (!stats.value) {
+    return { total: null as number | null, thisYear: null as number | null };
+  }
+  const source = allConcerts.value.length > 0 ? allConcerts.value : concerts.value;
+  if (source.length === 0) {
+    return { total: 0, thisYear: 0 };
+  }
+  const yearPrefix = `${new Date().getFullYear()}-`;
+  let total = 0;
+  let thisYear = 0;
+  for (const concert of source) {
+    const price = Number(concert.ticketPrice ?? 0);
+    if (Number.isFinite(price)) {
+      total += price;
+      if (concert.date?.startsWith(yearPrefix)) {
+        thisYear += price;
+      }
+    }
+  }
+  return { total, thisYear };
 });
 async function loadAllConcerts() {
   allConcertsLoading.value = true;
@@ -1091,6 +1131,12 @@ async function refreshData() {
   };
   concerts.value = concertsResponse;
 
+  if (allBands.value.length === 0) {
+    await loadAllBands();
+  }
+  if (allActs.value.length === 0) {
+    await loadAllActs();
+  }
   if (allConcertsOpen.value || allConcerts.value.length > 0) {
     await loadAllConcerts();
   }

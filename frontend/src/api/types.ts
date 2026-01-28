@@ -18,6 +18,7 @@ export interface ConcertListItemDto {
   venueName?: string;
   bandCount?: number;
   participantCount?: number;
+  ticketPrice?: number | null;
 }
 
 export interface ConcertEventDto {

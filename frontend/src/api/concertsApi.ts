@@ -174,16 +174,17 @@ const mockConcerts: ConcertListItemDto[] = [
     venueName: "Some Arena",
     bandCount: 3,
     participantCount: 2,
+    ticketPrice: 79.5,
   },
-  { id: 1002, date: "2025-11-02", name: "The National", rating: 8, bandCount: 1, participantCount: 0 },
-  { id: 1003, date: "2025-10-12", name: "Powerwolf", rating: 7, bandCount: 2, participantCount: 0 },
-  { id: 1004, date: "2025-09-01", name: "Architects", rating: 9, bandCount: 2, participantCount: 0 },
-  { id: 1005, date: "2025-08-17", name: "Bring Me The Horizon", rating: 8, bandCount: 3, participantCount: 0 },
-  { id: 1006, date: "2025-07-04", name: "Rammstein", rating: 10, bandCount: 2, participantCount: 0 },
-  { id: 1007, date: "2025-06-22", name: "Ghost", rating: 8, bandCount: 2, participantCount: 0 },
-  { id: 1008, date: "2025-05-11", name: "Kreator", rating: 7, bandCount: 3, participantCount: 0 },
-  { id: 1009, date: "2025-04-03", name: "Muse", rating: 8, bandCount: 1, participantCount: 0 },
-  { id: 1010, date: "2025-03-14", name: "Metallica", rating: 10, bandCount: 1, participantCount: 0 },
+  { id: 1002, date: "2025-11-02", name: "The National", rating: 8, bandCount: 1, participantCount: 0, ticketPrice: 64 },
+  { id: 1003, date: "2025-10-12", name: "Powerwolf", rating: 7, bandCount: 2, participantCount: 0, ticketPrice: 55 },
+  { id: 1004, date: "2025-09-01", name: "Architects", rating: 9, bandCount: 2, participantCount: 0, ticketPrice: 49 },
+  { id: 1005, date: "2025-08-17", name: "Bring Me The Horizon", rating: 8, bandCount: 3, participantCount: 0, ticketPrice: 72 },
+  { id: 1006, date: "2025-07-04", name: "Rammstein", rating: 10, bandCount: 2, participantCount: 0, ticketPrice: 120 },
+  { id: 1007, date: "2025-06-22", name: "Ghost", rating: 8, bandCount: 2, participantCount: 0, ticketPrice: 58 },
+  { id: 1008, date: "2025-05-11", name: "Kreator", rating: 7, bandCount: 3, participantCount: 0, ticketPrice: 45 },
+  { id: 1009, date: "2025-04-03", name: "Muse", rating: 8, bandCount: 1, participantCount: 0, ticketPrice: 85 },
+  { id: 1010, date: "2025-03-14", name: "Metallica", rating: 10, bandCount: 1, participantCount: 0, ticketPrice: 110 },
 ];
 const mockDetails: Record<number, ConcertDetailsDto> = {
   1001: {
@@ -350,6 +351,7 @@ async function mapConcertOverviewData(
     venueId: event.venue_id,
     venueName: venueNameById.get(event.venue_id),
     bandCount: bandCountById.get(event.id),
+    ticketPrice: event.ticketPrice ?? null,
   }));
 }
 
