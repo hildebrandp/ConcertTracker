@@ -26,6 +26,10 @@
     "notes": {
       "type": "string",
       "description": "Additional notes about the Event (optional)"
+    },
+    "ticketPrice": {
+      "type": "number",
+      "description": "Ticket price for the Event (optional)"
     }
   },
   "required": ["name", "datetime", "venue_id"]

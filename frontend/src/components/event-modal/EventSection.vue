@@ -16,6 +16,17 @@
         />
       </div>
       <div class="field">
+        <label for="event-ticket">Ticket price</label>
+        <input
+          id="event-ticket"
+          v-model.trim="eventTicketPriceModel"
+          type="number"
+          min="0"
+          step="0.01"
+          class="no-spinner"
+        />
+      </div>
+      <div class="field">
         <label for="event-rating">Rating</label>
         <div
           class="star-rating"
@@ -64,6 +75,7 @@ const props = defineProps<{
   eventDatetime: string;
   eventRating: string;
   eventNotes: string;
+  eventTicketPrice: string;
   eventHoverRating: number | null;
 }>();
 
@@ -72,6 +84,7 @@ const emit = defineEmits<{
   (e: "update:eventDatetime", value: string): void;
   (e: "update:eventRating", value: string): void;
   (e: "update:eventNotes", value: string): void;
+  (e: "update:eventTicketPrice", value: string): void;
   (e: "update:eventHoverRating", value: number | null): void;
 }>();
 
@@ -93,6 +106,11 @@ const eventRatingModel = computed({
 const eventNotesModel = computed({
   get: () => props.eventNotes,
   set: (value) => emit("update:eventNotes", value),
+});
+
+const eventTicketPriceModel = computed({
+  get: () => props.eventTicketPrice,
+  set: (value) => emit("update:eventTicketPrice", value),
 });
 
 const eventRatingValue = computed(() => {

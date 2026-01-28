@@ -27,6 +27,7 @@ export interface ConcertEventDto {
   venue_id: number;
   rating?: number | null;
   notes?: string | null;
+  ticketPrice?: number | null;
   band_count?: number | null;
 }
 
@@ -151,6 +152,7 @@ export interface CreateConcertEventDto {
   venue_id: number;
   rating?: number | null;
   notes?: string | null;
+  ticketPrice?: number | null;
 }
 
 export interface CreateConcertVenueDto {

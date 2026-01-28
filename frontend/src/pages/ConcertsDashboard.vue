@@ -9,18 +9,32 @@
         <div class="sub">Overview and recent activity</div>
       </div>
       <div class="header-actions">
-        <label class="theme-toggle">
-          <input v-model="darkMode" type="checkbox" />
-          <span>Dark mode</span>
-        </label>
-        <button class="danger" type="button" @click="confirmClearAll">
-          Delete all data
+        <button class="secondary" type="button" @click="toggleSettings">
+          Settings
         </button>
         <button class="primary" type="button" @click="openCreate">
           Add event
         </button>
       </div>
     </header>
+
+    <div v-if="settingsOpen" class="settings-backdrop" @click.self="closeSettings">
+      <div class="settings-panel" role="dialog" aria-modal="true">
+        <div class="settings-header">
+          <div class="settings-title">Settings</div>
+          <button class="close" type="button" @click="closeSettings">Close</button>
+        </div>
+        <div class="settings-body">
+          <label class="theme-toggle">
+            <input v-model="darkMode" type="checkbox" />
+            <span>Dark mode</span>
+          </label>
+          <button class="danger" type="button" @click="confirmClearAll">
+            Delete all data
+          </button>
+        </div>
+      </div>
+    </div>
 
     <StatsRow
       :stats="stats"
@@ -189,6 +203,10 @@
       @created="refreshData"
       @updated="handleEventUpdated"
     />
+
+    <footer class="version-footer">
+      Frontend v{{ frontendVersion }} · Backend v{{ backendVersion }}
+    </footer>
   </div>
 </template>
 
@@ -315,6 +333,9 @@ const updateOpen = ref(false);
 const updateEventId = ref<number | null>(null);
 const reopenEventId = ref<number | null>(null);
 const darkMode = ref(false);
+const settingsOpen = ref(false);
+const frontendVersion = import.meta.env.VITE_FRONTEND_VERSION ?? "dev";
+const backendVersion = import.meta.env.VITE_BACKEND_VERSION ?? "dev";
 const anyModalOpen = computed(
   () =>
     detailsOpen.value ||
@@ -500,6 +521,14 @@ function closeAllViews() {
   allActsOpen.value = false;
   allVenuesOpen.value = false;
   allParticipantsOpen.value = false;
+}
+
+function toggleSettings() {
+  settingsOpen.value = !settingsOpen.value;
+}
+
+function closeSettings() {
+  settingsOpen.value = false;
 }
 
 async function openAllVenues() {
@@ -1120,6 +1149,9 @@ watch(
   anyModalOpen,
   (open) => {
     document.body.classList.toggle("modal-open", open);
+    if (open) {
+      settingsOpen.value = false;
+    }
   },
   { immediate: true }
 );
@@ -1516,6 +1548,14 @@ async function handleEventUpdated() {
   cursor: pointer;
 }
 
+.secondary {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
 .danger {
   border: 1px solid rgba(180, 0, 0, 0.4);
   background: rgba(180, 0, 0, 0.08);
@@ -1543,6 +1583,67 @@ async function handleEventUpdated() {
   accent-color: #111;
 }
 
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  z-index: 20;
+}
+
+.settings-panel {
+  width: min(320px, 100%);
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: fit-content;
+  color: var(--text);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.close {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.version-footer {
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: flex-end;
+}
+
 @media (max-width: 720px) {
   .header {
     flex-direction: column;
@@ -1568,6 +1669,13 @@ async function handleEventUpdated() {
     justify-content: space-between;
   }
 
+  .settings-panel {
+    width: 100%;
+  }
+
+  .version-footer {
+    justify-content: flex-start;
+  }
 }
 </style>
 

@@ -12,6 +12,7 @@
           v-model:eventDatetime="eventDatetime"
           v-model:eventRating="eventRating"
           v-model:eventNotes="eventNotes"
+          v-model:eventTicketPrice="eventTicketPrice"
           v-model:eventHoverRating="eventHoverRating"
         />
 
@@ -260,6 +261,7 @@ const eventName = ref("");
 const eventDatetime = ref(defaultEventDatetime());
 const eventRating = ref("");
 const eventNotes = ref("");
+const eventTicketPrice = ref("");
 const eventHoverRating = ref<number | null>(null);
 const venueHoverRating = ref<number | null>(null);
 const bandHoverRatings = ref<Record<number, number | null>>({});
@@ -427,6 +429,9 @@ async function loadEventForEdit(eventId: number) {
       ? String(event.rating)
       : "";
     eventNotes.value = event.notes ?? "";
+    const rawTicketPrice = (event as any).ticketPrice ?? (event as any).ticket_price ?? "";
+    eventTicketPrice.value =
+      rawTicketPrice !== null && rawTicketPrice !== undefined ? String(rawTicketPrice) : "";
 
     selectedVenueId.value = event.venue_id ?? null;
     const existingVenue = venues.value.find((venue) => venue.id === event.venue_id);
@@ -476,6 +481,7 @@ function resetForm() {
   eventDatetime.value = defaultEventDatetime();
   eventRating.value = "";
   eventNotes.value = "";
+  eventTicketPrice.value = "";
   venueQuery.value = "";
   selectedVenueId.value = null;
   selectedVenueName.value = "";
@@ -814,6 +820,7 @@ async function save() {
       datetime: toSqlDatetime(eventDatetime.value),
       rating: numberOrZero(eventRating.value),
       notes: valueOrEmptyString(eventNotes.value),
+      ticketPrice: numberOrUndefined(eventTicketPrice.value),
     };
 
     if (useNewVenue.value && venuePayload) {

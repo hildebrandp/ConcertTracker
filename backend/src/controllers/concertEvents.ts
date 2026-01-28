@@ -16,7 +16,13 @@ const schema_ConcertEventBundle_FilePath = path.resolve(__dirname, "../types/sch
 const validator = new JSONSchemaValidator();
 
 type EventBundle = {
-    event: { name: string; datetime: string; rating?: number | null; notes?: string | null };
+    event: {
+        name: string;
+        datetime: string;
+        rating?: number | null;
+        notes?: string | null;
+        ticketPrice?: number | null;
+    };
     venueId?: number;
     venue?: any;
     bands: Array<any>;
@@ -355,11 +361,13 @@ export const create_ConcertEvent = async (req: Request, res: Response) => {
         return;
     }
 
-    const { name,
+    const {
+        name,
         datetime,
         venue_id,
         rating,
-        notes = null
+        notes = null,
+        ticketPrice = null,
     } = eventData;
 
     let connection;
@@ -368,10 +376,17 @@ export const create_ConcertEvent = async (req: Request, res: Response) => {
         connection = await getConnection();
 
         // Insert the new venue into the database
-        const query = `INSERT INTO ${table_name_ConcertEvents} (name, datetime, venue_id, rating, notes) 
-            VALUES (?, ?, ?, ?, ?)`;
+        const query = `INSERT INTO ${table_name_ConcertEvents} (name, datetime, venue_id, rating, notes, ticketPrice) 
+            VALUES (?, ?, ?, ?, ?, ?)`;
 
-        const result = await connection.query(query, [name, datetime, venue_id, rating, notes]);
+        const result = await connection.query(query, [
+            name,
+            datetime,
+            venue_id,
+            rating,
+            notes,
+            ticketPrice,
+        ]);
 
         // Check if the insert was successful
         if (result.affectedRows === 1) {
@@ -417,13 +432,14 @@ export const create_ConcertEvent_WithBands = async (req: Request, res: Response)
             throw new Error('Missing venue selection.');
         }
 
-        const eventQuery = `INSERT INTO ${table_name_ConcertEvents} (name, datetime, venue_id, rating, notes) VALUES (?, ?, ?, ?, ?)`;
+        const eventQuery = `INSERT INTO ${table_name_ConcertEvents} (name, datetime, venue_id, rating, notes, ticketPrice) VALUES (?, ?, ?, ?, ?, ?)`;
         const eventValues = [
             event.name,
             event.datetime,
             resolvedVenueId,
             event.rating ?? null,
             event.notes ?? null,
+            event.ticketPrice ?? null,
         ];
         const eventResult = await connection.query(eventQuery, eventValues);
         const eventId = Number(eventResult.insertId);
@@ -493,17 +509,27 @@ export const update_ConcertEvent_ById = async (req: Request, res: Response) => {
         }
 
         // Update the concert event
-        const { name,
+        const {
+            name,
             datetime,
             venue_id,
             rating,
-            notes = null
+            notes = null,
+            ticketPrice = null,
         } = eventData;
 
         const query = `UPDATE ${table_name_ConcertEvents} SET name = ?, datetime = ?, venue_id = ?, 
-            rating = ?, notes = ? WHERE id = ?`;
+            rating = ?, notes = ?, ticketPrice = ? WHERE id = ?`;
 
-        const result = await connection.query(query, [name, datetime, venue_id, rating, notes, id]);
+        const result = await connection.query(query, [
+            name,
+            datetime,
+            venue_id,
+            rating,
+            notes,
+            ticketPrice,
+            id,
+        ]);
 
         if (result.affectedRows === 1) {
             res.status(200).json({ message: 'Concert-Event updated successfully' });
@@ -565,13 +591,14 @@ export const update_ConcertEvent_WithBands = async (req: Request, res: Response)
             throw new Error('Missing venue selection.');
         }
 
-        const eventUpdateQuery = `UPDATE ${table_name_ConcertEvents} SET name = ?, datetime = ?, venue_id = ?, rating = ?, notes = ? WHERE id = ?`;
+        const eventUpdateQuery = `UPDATE ${table_name_ConcertEvents} SET name = ?, datetime = ?, venue_id = ?, rating = ?, notes = ?, ticketPrice = ? WHERE id = ?`;
         const eventUpdateValues = [
             event.name,
             event.datetime,
             resolvedVenueId,
             event.rating ?? null,
             event.notes ?? null,
+            event.ticketPrice ?? null,
             id,
         ];
         await connection.query(eventUpdateQuery, eventUpdateValues);
